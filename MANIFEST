@@ -1,0 +1,11 @@
+COPYING
+MANIFEST
+PyOBEX/__init__.py
+PyOBEX/client.py
+PyOBEX/common.py
+PyOBEX/headers.py
+PyOBEX/requests.py
+PyOBEX/responses.py
+README.html
+README.txt
+setup.py
