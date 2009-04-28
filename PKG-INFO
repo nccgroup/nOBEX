@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: PyOBEX
+Version: 0.10
+Summary: A package implementing aspects of the Object Exchange (OBEX) protocol
+Home-page: http://www.boddie.org.uk/david/Projects/Python/PyOBEX/
+Author: David Boddie
+Author-email: david@boddie.org.uk
+License: GNU General Public License (version 3 or later)
+Description: This package provides a simple Python implementation of aspects of the OBEX protocol based on the information available in freely available Bluetooth specifications and other openly accessible online resources. It is not intended to be a complete, accurate, or fully functioning implementation of the protocol.
+Platform: Cross-platform
