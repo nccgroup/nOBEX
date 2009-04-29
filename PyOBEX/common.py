@@ -21,7 +21,22 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from socket import MSG_WAITALL
+import socket
+
+if hasattr(socket, "AF_BLUETOOTH"):
+
+    def Socket():
+        return socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM,
+                             socket.BTPROTO_RFCOMM)
+else:
+    try:
+        from bluetooth import BluetoothSocket, RFCOMM
+    except ImportError:
+        raise
+    
+    def Socket():
+        return BluetoothSocket(RFCOMM)
+
 import struct
 import headers
 
@@ -116,12 +131,12 @@ class MessageHandler:
 
     format = ">BH"
     
-    def _read_packet(self, socket):
+    def _read_packet(self, socket_):
     
-        data = socket.recv(3, MSG_WAITALL)
+        data = socket_.recv(3, socket.MSG_WAITALL)
         type, length = struct.unpack(self.format, data)
         if length > 3:
-            data += socket.recv(length - 3, MSG_WAITALL)
+            data += socket_.recv(length - 3, socket.MSG_WAITALL)
         return type, length, data
     
     def decode(self, socket):

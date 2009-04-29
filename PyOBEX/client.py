@@ -21,9 +21,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import socket
-
-from common import OBEX_Version
+from common import OBEX_Version, Socket
 import headers
 import requests
 import responses
@@ -116,8 +114,7 @@ class Client:
         header_list keyword argument.
         """
         
-        self.socket = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM,
-                                    socket.BTPROTO_RFCOMM)
+        self.socket = Socket()
         self.socket.connect((self.address, self.port))
         
         flags = 0
