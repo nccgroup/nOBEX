@@ -34,8 +34,21 @@ else:
     except ImportError:
         raise
     
-    def Socket():
-        return BluetoothSocket(RFCOMM)
+    if sys.platform == "win32":
+    
+        class Socket(BluetoothSocket):
+            def __init__(self):
+                BluetoothSocket.__init__(self, RFCOMM)
+            def sendall(self, data):
+                while data:
+                    sent = self.send(data)
+                    if sent > 0:
+                        data = data[sent:]
+                    elif sent < 0:
+                        raise socket.error
+    else:
+        def Socket():
+            return BluetoothSocket(RFCOMM)
 
 import struct
 import headers
