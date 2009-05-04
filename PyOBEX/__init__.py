@@ -22,4 +22,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 __all__ = ["client", "common", "headers", "requests", "responses"]
-__version__ = "0.21"
+__version__ = "0.22"
