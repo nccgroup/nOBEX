@@ -144,13 +144,26 @@ class MessageHandler:
 
     format = ">BH"
     
-    def _read_packet(self, socket_):
+    if sys.platform == "win32":
     
-        data = socket_.recv(3, socket.MSG_WAITALL)
-        type, length = struct.unpack(self.format, data)
-        if length > 3:
-            data += socket_.recv(length - 3, socket.MSG_WAITALL)
-        return type, length, data
+        def _read_packet(self, socket_):
+        
+            data = ""
+            while len(data) < 3:
+                data += socket_.recv(3 - len(data))
+            type, length = struct.unpack(self.format, data)
+            while len(data) < length:
+                data += socket_.recv(length - len(data))
+            return type, length, data
+    else:
+    
+        def _read_packet(self, socket_):
+        
+            data = socket_.recv(3, socket.MSG_WAITALL)
+            type, length = struct.unpack(self.format, data)
+            if length > 3:
+                data += socket_.recv(length - 3, socket.MSG_WAITALL)
+            return type, length, data
     
     def decode(self, socket):
     
