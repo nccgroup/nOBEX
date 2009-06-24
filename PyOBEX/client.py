@@ -49,6 +49,9 @@ class Client:
         self.max_packet_length = 0xffff
         self.obex_version = OBEX_Version()
         self.response_handler = responses.ResponseHandler()
+        
+        self.socket = None
+        self._external_socket = False
     
     def _send_headers(self, request, header_list, max_length):
     
@@ -102,6 +105,27 @@ class Client:
         
         return new_headers, "".join(body)
     
+    def set_socket(self, socket):
+    
+        """set_socket(self, socket)
+        
+        Sets the socket to be used for communication to the socket specified.
+        
+        If socket is None, the client will create a socket for internal use
+        when a connection is made. This is the default behaviour.
+        
+        This method must not be called once a connection has been opened.
+        Only after an existing connection has been disconnected is it safe
+        to set a new socket.
+        """
+        
+        self.socket = socket
+        
+        if socket is None:
+            self._external_socket = False
+        else:
+            self._external_socket = True
+    
     def connect(self, header_list = ()):
     
         """connect(self, header_list = ())
@@ -114,7 +138,9 @@ class Client:
         header_list keyword argument.
         """
         
-        self.socket = Socket()
+        if not self._external_socket:
+            self.socket = Socket()
+        
         self.socket.connect((self.address, self.port))
         
         flags = 0
@@ -128,7 +154,7 @@ class Client:
         
         if isinstance(response, responses.Success):
             self.remote_info = response
-        else:
+        elif not self._external_socket:
             self.socket.close()
         
         return response
@@ -143,6 +169,8 @@ class Client:
         
         Specific headers can be sent by passing a sequence as the
         header_list keyword argument.
+        
+        If the socket was not supplied using set_socket(), it will be closed.
         """
         
         max_length = self.remote_info.max_packet_length
@@ -150,7 +178,9 @@ class Client:
         
         header_list = list(header_list)
         response = self._send_headers(request, header_list, max_length)
-        self.socket.close()
+        
+        if not self._external_socket:
+            self.socket.close()
         
         return response
     
