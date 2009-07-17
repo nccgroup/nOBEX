@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: PyOBEX
-Version: 0.23
+Version: 0.24
 Summary: A package implementing aspects of the Object Exchange (OBEX) protocol
 Home-page: http://www.boddie.org.uk/david/Projects/Python/PyOBEX/
 Author: David Boddie
