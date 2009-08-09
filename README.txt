@@ -78,9 +78,9 @@ Find out about the services provided by a device by calling::
 
   bluetooth.find_service(address=device_address)
 
-The file transfer service has the service ID, "E006", so we can find out the
-port on the device that we need to connect to when using the BrowserClient
-from the PyOBEX.client module::
+On my phone, the file transfer service has the service ID, "E006", so we can
+find out the port on the device that we need to connect to when using the
+BrowserClient from the PyOBEX.client module::
 
   services = bluetooth.find_service(uuid="E006", address=device_address)
 
