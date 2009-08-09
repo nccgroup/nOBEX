@@ -86,7 +86,9 @@ class ResponseHandler(MessageHandler):
     
         code, length, data = self._read_packet(socket)
         
-        if self.message_dict.has_key(code):
+        if code == ConnectSuccess.code:
+            message = ConnectSuccess()
+        elif self.message_dict.has_key(code):
             message = self.message_dict[code]()
         else:
             return self.UnknownMessageClass(code, length, data)

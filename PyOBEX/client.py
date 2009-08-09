@@ -52,11 +52,16 @@ class Client:
         
         self.socket = None
         self._external_socket = False
+        self.connection_id = None
     
     def _send_headers(self, request, header_list, max_length):
     
         """Convenience method to add headers to a request and send one or
         more requests with those headers."""
+        
+        # Ensure that any Connection ID information is sent first.
+        if self.connection_id:
+            header_list.insert(0, self.connection_id)
         
         while header_list:
         
@@ -152,8 +157,14 @@ class Client:
         header_list = list(header_list)
         response = self._send_headers(request, header_list, max_length)
         
-        if isinstance(response, responses.Success):
+        if isinstance(response, responses.ConnectSuccess):
             self.remote_info = response
+            for header in response.header_data:
+                if isinstance(header, headers.Connection_ID):
+                    # Recycle the Connection ID data to create a new header
+                    # for future use.
+                    self.connection_id = headers.Connection_ID(header.decode())
+        
         elif not self._external_socket:
             self.socket.close()
         
@@ -181,6 +192,8 @@ class Client:
         
         if not self._external_socket:
             self.socket.close()
+        
+        self.connection_id = None
         
         return response
     
@@ -250,8 +263,9 @@ class Client:
         """get(self, name = None, header_list = ())
         
         Requests the specified file from the server's current directory for
-        the session, and returns a tuple containing a list of responses
-        received during the operation and the file data received.
+        the session. If successful, returns a tuple containing a list of
+        responses received during the operation and the file data received.
+        If unsuccessful, a single response object is returned.
         
         Additional headers can be sent by passing a sequence as the
         header_list keyword argument. These will be sent after the name
@@ -389,10 +403,14 @@ class BrowserClient(Client):
     
         """capability(self)
         
-        Returns a capability object from the server.
+        Returns a capability object from the server, or the server's response
+        if the operation was unsuccessful.
         """
         
-        header, data = self.get(header_list=[headers.Type("x-obex/capability")])
+        response = self.get(header_list=[headers.Type("x-obex/capability")])
+        if not isinstance(response, responses.Success):
+            return response
+        header, data = response
         return data
     
     def listdir(self, name = ""):
