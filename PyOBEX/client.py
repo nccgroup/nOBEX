@@ -197,13 +197,17 @@ class Client:
         
         return response
     
-    def put(self, name, file_data, header_list = ()):
+    def put(self, name, file_data, header_list = (), callback = None):
     
-        """put(self, name, file_data, header_list = ())
+        """put(self, name, file_data, header_list = (), callback = None)
         
         Sends a file with the given name, containing the file_data specified,
-        to the server for storage in the current directory for the session,
-        and returns the response.
+        to the server for storage in the current directory for the session.
+        
+        If a callback is specified, it will be called with each response
+        obtained during the put operation. If no callback is specified, the
+        final response is returned when the put operation is complete or an
+        error occurs.
         
         Additional headers can be sent by passing a sequence as the
         header_list keyword argument. These will be sent after the name and
@@ -211,6 +215,29 @@ class Client:
         supplied.
         """
         
+        for response in self._put(name, header_list):
+        
+            if isinstance(response, responses.Continue) or \
+                isinstance(response, responses.Success):
+            
+                # Report successful responses if using a callback.
+                if callback:
+                    callback(response)
+            
+            elif callback:
+                # Report failure responses using the callback, then return.
+                callback(response)
+                return
+            else:
+                # Return failure responses directly.
+                return response
+        
+        # Finally, return the last response if not using a callback.
+        if not callback:
+            return response
+    
+    def _put(self, name, file_data, header_list = ()):
+    
         header_list = [
             headers.Name(name),
             headers.Length(len(file_data))
@@ -220,9 +247,10 @@ class Client:
         request = requests.Put()
         
         response = self._send_headers(request, header_list, max_length)
+        yield response
         
         if not isinstance(response, responses.Continue):
-            return response
+            return
         
         # Send the file data.
         
@@ -242,9 +270,10 @@ class Client:
                 self.socket.sendall(request.encode())
                 
                 response = self.response_handler.decode(self.socket)
+                yield response
                 
                 if not isinstance(response, responses.Continue):
-                    return response
+                    return
             
             else:
                 request = requests.Put_Final()
@@ -252,26 +281,60 @@ class Client:
                 self.socket.sendall(request.encode())
                 
                 response = self.response_handler.decode(self.socket)
+                yield response
                 
                 if not isinstance(response, responses.Success):
-                    return response
-        
-        return response
+                    return
     
-    def get(self, name = None, header_list = ()):
+    def get(self, name = None, header_list = (), callback = None):
     
-        """get(self, name = None, header_list = ())
+        """get(self, name = None, header_list = (), callback = None)
         
         Requests the specified file from the server's current directory for
-        the session. If successful, returns a tuple containing a list of
-        responses received during the operation and the file data received.
-        If unsuccessful, a single response object is returned.
+        the session.
+        
+        If a callback is specified, it will be called with each response
+        obtained during the get operation. If no callback is specified, a value
+        is returned which depends on the success of the operation.
+        
+        For an operation without callback, if successful, this method returns a
+        tuple containing a list of responses received during the operation and
+        the file data received; if unsuccessful, a single response object is
+        returned.
         
         Additional headers can be sent by passing a sequence as the
         header_list keyword argument. These will be sent after the name
         information.
         """
         
+        returned_headers = []
+        
+        for response in self._get(name, header_list):
+        
+            if isinstance(response, responses.Continue) or \
+                isinstance(response, responses.Success):
+            
+                # Report successful responses if using a callback or collect
+                # them for later.
+                if callback:
+                    callback(response)
+                else:
+                    returned_headers += response.header_data
+            
+            elif callback:
+                # Report failure responses using the callback, then return.
+                callback(response)
+                return
+            else:
+                # Return failure responses directly.
+                return response
+        
+        # Finally, return the collected responses if not using a callback.
+        if not callback:
+            self._collect_parts(returned_headers)
+    
+    def _get(self, name = None, header_list = ()):
+    
         header_list = list(header_list)
         if name is not None:
             header_list = [headers.Name(name)] + header_list
@@ -280,31 +343,23 @@ class Client:
         request = requests.Get()
         
         response = self._send_headers(request, header_list, max_length)
+        yield response
         
         if not isinstance(response, responses.Continue) and \
             not isinstance(response, responses.Success):
         
-            return response
+            return
         
         # Retrieve the file data.
-        returned_headers = []
         file_data = []
         request = requests.Get_Final()
         
         while isinstance(response, responses.Continue):
         
-            returned_headers += response.header_data
-            
             self.socket.sendall(request.encode())
             
             response = self.response_handler.decode(self.socket)
-        
-        if not isinstance(response, responses.Success):
-            return response
-        
-        returned_headers += response.header_data
-        
-        return self._collect_parts(returned_headers)
+            yield response
     
     def setpath(self, name = "", create_dir = False, to_parent = False, header_list = ()):
     
