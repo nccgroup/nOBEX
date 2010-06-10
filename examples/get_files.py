@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import bluetooth, os, sys
 from xml.etree import ElementTree
 from PyOBEX import client, responses
