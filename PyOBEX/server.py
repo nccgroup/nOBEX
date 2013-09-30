@@ -21,7 +21,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from bluetooth import BluetoothSocket, RFCOMM
+from bluetooth import BluetoothSocket, RFCOMM, OBEX_FILETRANS_CLASS, \
+    OBEX_FILETRANS_PROFILE, OBEX_OBJPUSH_CLASS, OBEX_OBJPUSH_PROFILE, \
+    OBEX_UUID, PUBLIC_BROWSE_GROUP, advertise_service
 
 from common import OBEX_Version
 import headers
