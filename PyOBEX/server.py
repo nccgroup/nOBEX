@@ -39,10 +39,6 @@ class Server:
         self.max_packet_length = 0xffff
         self.obex_version = OBEX_Version()
         self.request_handler = requests.RequestHandler()
-        self.methods = {
-            requests.Connect: self.connect,
-            requests.Disconnect: self.disconnect
-            }
     
     def start_service(self, port, name, uuid, service_classes, service_profiles,
                       provider, description, protocols):
@@ -75,17 +71,33 @@ class Server:
             
                 request = self.request_handler.decode(connection)
                 
-                try:
-                    self.methods[request.__class__](connection, request)
+                if isinstance(request, requests.Connect):
+                    self.connect(connection, request)
                 
-                except KeyError:
+                elif isinstance(request, requests.Disconnect):
+                    self.disconnect(connection, request)
+                
+                elif isinstance(request, requests.Put):
+                    self.put(connection, request)
+                
+                elif isinstance(request, requests.Put):
+                    self.put(connection, request)
+                
+                else:
                     self._reject(connection)
     
-    def _send_headers(self, socket, response, header_list, max_length):
+    def _max_length(self):
+    
+        if hasattr(self, "remote_info"):
+            return self.remote_info.max_packet_length
+        else:
+            return self.max_packet_length
+    
+    def send_response(self, socket, response, header_list = []):
     
         while header_list:
         
-            if response.add_header(header_list[0], max_length):
+            if response.add_header(header_list[0], self._max_length()):
                 header_list.pop(0)
             else:
                 socket.sendall(response.encode())
@@ -96,13 +108,7 @@ class Server:
     
     def _reject(self, socket):
     
-        if hasattr(self, "remote_info"):
-            max_length = self.remote_info.max_packet_length
-        else:
-            max_length = self.max_packet_length
-        
-        response = responses.Forbidden()
-        self._send_headers(socket, response, [], max_length)
+        self.send_response(socket, responses.Forbidden())
     
     def connect(self, socket, request):
     
@@ -116,20 +122,17 @@ class Server:
         data = (self.obex_version.to_byte(), flags, max_length)
         
         response = responses.ConnectSuccess(data)
-        header_list = []
-        self._send_headers(socket, response, header_list, max_length)
+        self.send_response(socket, response)
     
     def disconnect(self, socket, request):
     
-        max_length = self.remote_info.max_packet_length
-        
-        flags = 0
-        data = (self.obex_version.to_byte(), flags, max_length)
-        
-        response = responses.Success(data)
-        header_list = []
-        self._send_headers(socket, response, header_list, max_length)
+        response = responses.Success()
+        self.send_response(socket, response)
         self.connected = False
+    
+    def put(self, socket, request):
+    
+        self._reject(socket)
 
 class BrowserServer(Server):
 

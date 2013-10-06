@@ -35,6 +35,10 @@ class Request(Message):
 
         Message.__init__(self, data, header_data)
         self.minimum_length = self.length(Message.format + self.format)
+    
+    def is_final(self):
+    
+        return (self.code & 0x80) == 0x80
 
 class Connect(Request):
 

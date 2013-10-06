@@ -45,7 +45,6 @@ class Continue(Response):
 
 class Success(Response):
     code = OBEX_OK = OBEX_Success = 0xA0
-    format = "BBH"
 
 class ConnectSuccess(Response):
     code = OBEX_OK = OBEX_Success = 0xA0
