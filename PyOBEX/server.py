@@ -69,13 +69,17 @@ class Server:
         while True:
         
             connection, address = socket.accept()
-            request = self.request_handler.decode(connection)
+            self.connected = True
             
-            try:
-                self.methods[request.__class__](connection, request)
+            while self.connected:
             
-            except KeyError:
-                self.reject(connection)
+                request = self.request_handler.decode(connection)
+                
+                try:
+                    self.methods[request.__class__](connection, request)
+                
+                except KeyError:
+                    self._reject(connection)
     
     def _send_headers(self, socket, response, header_list, max_length):
     
@@ -92,13 +96,13 @@ class Server:
     
     def _reject(self, socket):
     
-        if hasattr(self, remote_info):
+        if hasattr(self, "remote_info"):
             max_length = self.remote_info.max_packet_length
         else:
             max_length = self.max_packet_length
         
         response = responses.Forbidden()
-        self._send_headers(response, [], max_length)
+        self._send_headers(socket, response, [], max_length)
     
     def connect(self, socket, request):
     
@@ -119,9 +123,13 @@ class Server:
     
         max_length = self.remote_info.max_packet_length
         
+        flags = 0
+        data = (self.obex_version.to_byte(), flags, max_length)
+        
         response = responses.Success(data)
         header_list = []
         self._send_headers(socket, response, header_list, max_length)
+        self.connected = False
 
 class BrowserServer(Server):
 

@@ -45,6 +45,7 @@ class Continue(Response):
 
 class Success(Response):
     code = OBEX_OK = OBEX_Success = 0xA0
+    format = "BBH"
 
 class ConnectSuccess(Response):
     code = OBEX_OK = OBEX_Success = 0xA0
@@ -55,6 +56,9 @@ class Bad_Request(FailureResponse):
 
 class Unauthorized(FailureResponse):
     code = OBEX_Unauthorized = 0xC1
+
+class Forbidden(FailureResponse):
+    code = OBEX_Forbidden = 0xC3
 
 class Not_Found(FailureResponse):
     code = OBEX_Not_Found = 0xC4
