@@ -43,10 +43,25 @@ class PushServer(server.PushServer):
         self.send_response(socket, responses.Success())
         
         name = name.strip("\x00").encode(sys.getfilesystemencoding())
+        name = os.path.split(name)[1]
         path = os.path.join(self.directory, name)
         print "Writing", repr(path)
         
         open(path, "wb").write(body)
+
+
+def run_server(device_address, port, directory):
+
+    # Run the server in a function so that, if the server causes an exception
+    # to be raised, the server instance will be deleted properly, giving us a
+    # chance to create a new one and start the service again without getting
+    # errors about the address still being in use.
+    try:
+        push_server = PushServer(device_address, directory)
+        socket = push_server.start_service(port)
+        push_server.serve(socket)
+    except IOError:
+        push_server.stop_service(socket)
 
 
 if __name__ == "__main__":
@@ -63,8 +78,7 @@ if __name__ == "__main__":
     if not os.path.exists(directory):
         os.mkdir(directory)
     
-    push_server = PushServer(device_address, directory)
-    socket = push_server.start_service(port)
-    push_server.serve(socket)
+    while True:
+        run_server(device_address, port, directory)
     
     sys.exit()
