@@ -215,7 +215,7 @@ class Client:
         supplied.
         """
         
-        for response in self._put(name, header_list):
+        for response in self._put(name, file_data, header_list):
         
             if isinstance(response, responses.Continue) or \
                 isinstance(response, responses.Success):

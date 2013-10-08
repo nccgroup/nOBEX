@@ -28,6 +28,8 @@ class PushServer(server.PushServer):
                     print "Length", length
                 elif isinstance(header, headers.Body):
                     body += header.decode()
+                elif isinstance(header, headers.End_Of_Body):
+                    body += header.decode()
             
             if request.is_final():
                 break
