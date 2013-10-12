@@ -66,6 +66,10 @@ class Server:
         while True:
         
             connection, address = socket.accept()
+            if not self.accept_connection(*address):
+                connection.close()
+                continue
+            
             self.connected = True
             
             while self.connected:
@@ -77,9 +81,6 @@ class Server:
                 
                 elif isinstance(request, requests.Disconnect):
                     self.disconnect(connection, request)
-                
-                elif isinstance(request, requests.Put):
-                    self.put(connection, request)
                 
                 elif isinstance(request, requests.Put):
                     self.put(connection, request)
@@ -110,6 +111,10 @@ class Server:
     def _reject(self, socket):
     
         self.send_response(socket, responses.Forbidden())
+    
+    def accept_connection(self, address, port):
+    
+        return True
     
     def connect(self, socket, request):
     
