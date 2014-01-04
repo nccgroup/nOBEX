@@ -76,17 +76,7 @@ class Server:
             
                 request = self.request_handler.decode(connection)
                 
-                if isinstance(request, requests.Connect):
-                    self.connect(connection, request)
-                
-                elif isinstance(request, requests.Disconnect):
-                    self.disconnect(connection, request)
-                
-                elif isinstance(request, requests.Put):
-                    self.put(connection, request)
-                
-                else:
-                    self._reject(connection)
+                self.process_request(connection, request)
     
     def _max_length(self):
     
@@ -97,6 +87,8 @@ class Server:
     
     def send_response(self, socket, response, header_list = []):
     
+        ### TODO: This needs to be able to split messages that are longer than
+        ### the maximum message length agreed with the other party.
         while header_list:
         
             if response.add_header(header_list[0], self._max_length()):
@@ -115,6 +107,26 @@ class Server:
     def accept_connection(self, address, port):
     
         return True
+    
+    def process_request(self, connection, request):
+    
+        """Processes the request from the connection.
+        
+        This method should be reimplemented in subclasses to add support for
+        more request types.
+        """
+        
+        if isinstance(request, requests.Connect):
+            self.connect(connection, request)
+        
+        elif isinstance(request, requests.Disconnect):
+            self.disconnect(connection, request)
+        
+        elif isinstance(request, requests.Put):
+            self.put(connection, request)
+        
+        else:
+            self._reject(connection)
     
     def connect(self, socket, request):
     
@@ -148,7 +160,10 @@ class BrowserServer(Server):
             port = get_available_port(RFCOMM)
         
         name = "OBEX File Transfer"
-        uuid = "F9EC7BC4-953C-11d2-984E-525400DC9E09" # "E006" also appears to work
+        # "E006" also appears to work if used as a service ID. However, 1106
+        # is the official profile number:
+        # (https://www.bluetooth.org/en-us/specification/assigned-numbers/service-discovery)
+        uuid = "F9EC7BC4-953C-11d2-984E-525400DC9E09"
         service_classes = [OBEX_FILETRANS_CLASS]
         service_profiles = [OBEX_FILETRANS_PROFILE]
         provider = ""
