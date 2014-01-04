@@ -70,7 +70,7 @@ class Put(Request):
     code = OBEX_Put = 0x02
     format = ""
 
-class Put_Final(Request):
+class Put_Final(Put):
 
     code = OBEX_Put_Final = 0x82
     format = ""
@@ -80,7 +80,7 @@ class Get(Request):
     code = OBEX_Get = 0x03
     format = ""
 
-class Get_Final(Request):
+class Get_Final(Get):
 
     code = OBEX_Get_Final = 0x83
     format = ""
