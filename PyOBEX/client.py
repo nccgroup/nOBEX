@@ -331,7 +331,7 @@ class Client:
         
         # Finally, return the collected responses if not using a callback.
         if not callback:
-            self._collect_parts(returned_headers)
+            return self._collect_parts(returned_headers)
     
     def _get(self, name = None, header_list = ()):
     
