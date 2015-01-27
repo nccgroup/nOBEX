@@ -28,11 +28,11 @@ class FileServer(server.BrowserServer):
             print header
             if isinstance(header, headers.Name):
                 name = header.decode().strip("\x00")
-                print "Receiving request for", name
+                print("Receiving request for", name)
             
             elif isinstance(header, headers.Type):
                 type = header.decode().strip("\x00")
-                print "Type", type
+                print("Type", type)
         
         path = os.path.abspath(os.path.join(self.directory, name))
         
@@ -79,10 +79,10 @@ class FileServer(server.BrowserServer):
             
                 if isinstance(header, headers.Name):
                     name = header.decode()
-                    print "Receiving", name
+                    print("Receiving", name)
                 elif isinstance(header, headers.Length):
                     length = header.decode()
-                    print "Length", length
+                    print("Length", length)
                 elif isinstance(header, headers.Body):
                     body += header.decode()
                 elif isinstance(header, headers.End_Of_Body):
@@ -102,7 +102,7 @@ class FileServer(server.BrowserServer):
         name = name.strip("\x00").encode(sys.getfilesystemencoding())
         name = os.path.split(name)[1]
         path = os.path.join(self.directory, name)
-        print "Writing", repr(path)
+        print("Writing", repr(path))
         
         open(path, "wb").write(body)
 

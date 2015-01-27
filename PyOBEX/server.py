@@ -53,7 +53,7 @@ class Server:
             provider, description, protocols
             )
         
-        print "Starting server for %s on port %i" % socket.getsockname()
+        print("Starting server for %s on port %i" % socket.getsockname())
         #self.serve(socket)
         return socket
     

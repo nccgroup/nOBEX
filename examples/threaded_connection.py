@@ -62,7 +62,7 @@ if __name__ == "__main__":
     try:
         result = call(c.connect)
         if isinstance(result, responses.ConnectSuccess):
-            print call(c.listdir)
+            print(call(c.listdir))
             call(c.disconnect)
     
     except CallerException:
