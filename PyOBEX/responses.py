@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import struct
-from common import OBEX_Version, Message, MessageHandler
+from PyOBEX.common import OBEX_Version, Message, MessageHandler
 
 class Response(Message):
 

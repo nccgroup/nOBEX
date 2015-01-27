@@ -26,10 +26,10 @@ from bluetooth import BluetoothSocket, RFCOMM, OBEX_FILETRANS_CLASS, \
     OBEX_UUID, PUBLIC_BROWSE_GROUP, RFCOMM_UUID, advertise_service, \
     stop_advertising
 
-from common import OBEX_Version
-import headers
-import requests
-import responses
+from PyOBEX.common import OBEX_Version
+from PyOBEX import headers
+from PyOBEX import requests
+from PyOBEX import responses
 
 
 class Server:

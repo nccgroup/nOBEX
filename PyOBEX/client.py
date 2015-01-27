@@ -21,10 +21,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from common import OBEX_Version, Socket
-import headers
-import requests
-import responses
+from PyOBEX.common import OBEX_Version, Socket
+from PyOBEX import headers
+from PyOBEX import requests
+from PyOBEX import responses
 
 
 class Client:

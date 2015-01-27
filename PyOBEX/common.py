@@ -51,7 +51,7 @@ else:
             return BluetoothSocket(RFCOMM)
 
 import struct
-import headers
+from PyOBEX import headers
 
 class OBEX_Version:
 
