@@ -12,7 +12,7 @@ class FileServer(server.BrowserServer):
     
     def process_request(self, socket, request):
     
-        print request, isinstance(request, requests.Get)
+        print (request, isinstance(request, requests.Get))
         if isinstance(request, requests.Get):
             self.get(socket, request)
         else:
@@ -25,14 +25,14 @@ class FileServer(server.BrowserServer):
         
         for header in request.header_data:
         
-            print header
+            print(header)
             if isinstance(header, headers.Name):
                 name = header.decode().strip("\x00")
-                print("Receiving request for", name)
+                print("Receiving request for %s" % name)
             
             elif isinstance(header, headers.Type):
                 type = header.decode().strip("\x00")
-                print("Type", type)
+                print("Type %s" % type)
         
         path = os.path.abspath(os.path.join(self.directory, name))
         
@@ -54,7 +54,7 @@ class FileServer(server.BrowserServer):
                         s += u'  <file name="%s" created="%s" size="%s" />' % details[i]
                 
                 s += u"</folder-listing>\n"
-                print s
+                print(s)
                 
                 response = responses.Success()
                 response_headers = [headers.Name(name.encode("utf8")),
