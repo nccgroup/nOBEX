@@ -22,10 +22,10 @@ class PushServer(server.PushServer):
             
                 if isinstance(header, headers.Name):
                     name = header.decode()
-                    print("Receiving", name)
+                    print("Receiving %s" % name)
                 elif isinstance(header, headers.Length):
                     length = header.decode()
-                    print("Length", length)
+                    print("Length %i" % length)
                 elif isinstance(header, headers.Body):
                     body += header.decode()
                 elif isinstance(header, headers.End_Of_Body):
@@ -45,7 +45,7 @@ class PushServer(server.PushServer):
         name = name.strip("\x00").encode(sys.getfilesystemencoding())
         name = os.path.split(name)[1]
         path = os.path.join(self.directory, name)
-        print("Writing", repr(path))
+        print("Writing %s" % repr(path))
         
         open(path, "wb").write(body)
 
