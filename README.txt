@@ -3,8 +3,8 @@ PyOBEX Python Package
 =====================
 
 :Author: `David Boddie`_
-:Date: 2009-08-09
-:Version: 0.25
+:Date: 2015-01-22
+:Version: 0.26
 
 *Note: This text is marked up using reStructuredText formatting. It should be
 readable in a text editor but can be processed to produce versions of this
