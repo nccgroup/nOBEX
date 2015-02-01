@@ -14,7 +14,7 @@ if __name__ == "__main__":
     device_address = sys.argv[1]
     path = sys.argv[2]
     
-    services = bluetooth.find_service(uuid="E006", address=device_address)
+    services = bluetooth.find_service(uuid="1106", address=device_address)
     if services:
         port = services[0]["port"]
     

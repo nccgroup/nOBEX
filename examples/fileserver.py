@@ -27,11 +27,11 @@ class FileServer(server.BrowserServer):
         
             print(header)
             if isinstance(header, headers.Name):
-                name = header.decode().strip("\x00")
+                name = header.decode().strip(b"\x00")
                 print("Receiving request for %s" % name)
             
             elif isinstance(header, headers.Type):
-                type = header.decode().strip("\x00")
+                type = header.decode().strip(b"\x00")
                 print("Type %s" % type)
         
         path = os.path.abspath(os.path.join(self.directory, name))
@@ -43,17 +43,17 @@ class FileServer(server.BrowserServer):
             if path.startswith(self.directory):
             
                 l = os.listdir(path)
-                s = u'<?xml version="1.0"?>\n<folder-listing>\n'
+                s = '<?xml version="1.0"?>\n<folder-listing>\n'
                 for i in l:
                     objpath = os.path.join(path, i)
                     if os.path.isdir(objpath):
                         details[i] = (os.stat(objpath)[stat.ST_CTIME])
-                        s += u'  <folder name="%s" created="%s" />' % details[i]
+                        s += '  <folder name="%s" created="%s" />' % details[i]
                     else:
                         details[i] = (os.stat(objpath)[stat.ST_CTIME], os.stat(objpath)[stat.ST_SIZE])
-                        s += u'  <file name="%s" created="%s" size="%s" />' % details[i]
+                        s += '  <file name="%s" created="%s" size="%s" />' % details[i]
                 
-                s += u"</folder-listing>\n"
+                s += "</folder-listing>\n"
                 print(s)
                 
                 response = responses.Success()
@@ -99,7 +99,7 @@ class FileServer(server.BrowserServer):
         
         self.send_response(socket, responses.Success())
         
-        name = name.strip("\x00").encode(sys.getfilesystemencoding())
+        name = name.strip(b"\x00").encode(sys.getfilesystemencoding())
         name = os.path.split(name)[1]
         path = os.path.join(self.directory, name)
         print("Writing", repr(path))

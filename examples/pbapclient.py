@@ -32,7 +32,7 @@ if __name__ == "__main__":
     
     # Use the generic Client class to connect to the phone.
     c = client.Client(device_address, port)
-    uuid = "\x79\x61\x35\xf0\xf0\xc5\x11\xd8\x09\x66\x08\x00\x20\x0c\x9a\x66"
+    uuid = b"\x79\x61\x35\xf0\xf0\xc5\x11\xd8\x09\x66\x08\x00\x20\x0c\x9a\x66"
     result = c.connect(header_list=[headers.Target(uuid)])
     
     if not isinstance(result, responses.ConnectSuccess):
@@ -40,7 +40,7 @@ if __name__ == "__main__":
         sys.exit(1)
     
     # Access the list of vcards in the phone's internal phone book.
-    hdrs, cards = c.get(prefix+"telecom/pb", header_list=[headers.Type("x-bt/vcard-listing")])
+    hdrs, cards = c.get(prefix+"telecom/pb", header_list=[headers.Type(b"x-bt/vcard-listing")])
     
     # Parse the XML response to the previous request.
     root = ElementTree.fromstring(cards)
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     c.setpath(prefix + "telecom/pb")
     
     for name in names:
-        hdrs, card = c.get(name, header_list=[headers.Type("x-bt/vcard")])
+        hdrs, card = c.get(name, header_list=[headers.Type(b"x-bt/vcard")])
         print(card)
     
     # Return to the root directory.
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     print("\nThe phonebook in %stelecom/pb as one vcard\n" % prefix)
     
     hdrs, phonebook = c.get(prefix + "telecom/pb.vcf",
-                            header_list=[headers.Type("x-bt/phonebook")])
+                            header_list=[headers.Type(b"x-bt/phonebook")])
     print(phonebook)
     
     c.disconnect()

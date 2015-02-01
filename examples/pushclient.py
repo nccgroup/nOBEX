@@ -15,7 +15,7 @@ if __name__ == "__main__":
     file_name = sys.argv[3]
     
     c = client.Client(device_address, port)
-    c.connect(header_list=(headers.Target("OBEXObjectPush"),))
+    c.connect(header_list=(headers.Target(b"OBEXObjectPush"),))
     c.put(file_name, open(file_name).read())
     c.disconnect()
 

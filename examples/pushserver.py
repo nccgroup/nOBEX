@@ -12,9 +12,9 @@ class PushServer(server.PushServer):
     
     def put(self, socket, request):
     
-        name = ""
+        name = b""
         length = 0
-        body = ""
+        body = b""
         
         while True:
         
@@ -42,7 +42,7 @@ class PushServer(server.PushServer):
         
         self.send_response(socket, responses.Success())
         
-        name = name.strip("\x00").encode(sys.getfilesystemencoding())
+        name = name.strip("\x00")
         name = os.path.split(name)[1]
         path = os.path.join(self.directory, name)
         print("Writing %s" % repr(path))
