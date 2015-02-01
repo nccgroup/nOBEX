@@ -62,7 +62,7 @@ if __name__ == "__main__":
             sys.stdout.write("Writing file: %s\n" % name)
             headers, data = response
             try:
-                open(name, "w").write(data)
+                open(name, "wb").write(data)
             except IOError:
                 sys.stderr.write("Failed to write file: %s\n" % name)
     

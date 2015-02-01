@@ -31,7 +31,7 @@ class Caller:
         if self.has_result:
             return self.result
         else:
-            raise CallerException, "timed out"
+            raise CallerException("timed out")
 
 
 if __name__ == "__main__":

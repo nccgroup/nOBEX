@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import bluetooth, os, struct, sys
-from PyOBEX import client, headers
+from PyOBEX import client, headers, responses
 
 if __name__ == "__main__":
 
