@@ -108,7 +108,7 @@ class Client:
             else:
                 new_headers.append(header)
         
-        return new_headers, "".join(body)
+        return new_headers, b"".join(body)
     
     def set_socket(self, socket):
     
@@ -451,7 +451,7 @@ class BrowserClient(Client):
     
     def connect(self):
     
-        uuid = "\xF9\xEC\x7B\xC4\x95\x3C\x11\xd2\x98\x4E\x52\x54\x00\xDC\x9E\x09"
+        uuid = b"\xF9\xEC\x7B\xC4\x95\x3C\x11\xd2\x98\x4E\x52\x54\x00\xDC\x9E\x09"
         return Client.connect(self, header_list = [headers.Target(uuid)])
     
     def capability(self):
@@ -462,7 +462,7 @@ class BrowserClient(Client):
         if the operation was unsuccessful.
         """
         
-        response = self.get(header_list=[headers.Type("x-obex/capability")])
+        response = self.get(header_list=[headers.Type(b"x-obex/capability")])
         if not isinstance(response, responses.Success):
             return response
         header, data = response
@@ -484,16 +484,16 @@ class BrowserClient(Client):
         of the current directory are typically listed by the server.
         """
         
-        return self.get(name, header_list=[headers.Type("x-obex/folder-listing", False)])
+        return self.get(name, header_list=[headers.Type(b"x-obex/folder-listing", False)])
 
 class SyncClient(Client):
 
-    def connect(self, header_list = (headers.Target("IRMC-SYNC"),)):
+    def connect(self, header_list = (headers.Target(b"IRMC-SYNC"),)):
     
         return Client.connect(self, header_list)
 
 class SyncMLClient(Client):
 
-    def connect(self, header_list = (headers.Target("SYNCML-SYNC"),)):
+    def connect(self, header_list = (headers.Target(b"SYNCML-SYNC"),)):
     
         return Client.connect(self, header_list)

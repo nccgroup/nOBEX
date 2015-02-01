@@ -35,10 +35,10 @@ class Header:
 class UnicodeHeader(Header):
 
     def decode(self):
-        return unicode(self.data, encoding = "utf_16_be")
+        return str(self.data, encoding = "utf_16_be")
     def encode(self, data):
-        bytes = data.encode("utf_16_be") + "\x00\x00"
-        return struct.pack(">BH", self.code, len(bytes) + 3) + bytes
+        encoded_data = data.encode("utf_16_be") + b"\x00\x00"
+        return struct.pack(">BH", self.code, len(encoded_data) + 3) + encoded_data
 
 class DataHeader(Header):
 
@@ -70,8 +70,8 @@ class Name(UnicodeHeader):
 class Type(DataHeader):
     code = 0x42
     def encode(self, data):
-        if data[-1:] != "\x00":
-            data += "\x00"
+        if data[-1:] != b"\x00":
+            data += b"\x00"
         return struct.pack(">BH", self.code, len(data) + 3) + data
 
 class Length(FourByteHeader):

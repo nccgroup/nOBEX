@@ -64,6 +64,7 @@ class OBEX_Version:
     def from_byte(self, byte):
         self.major = (byte >> 4) & 0x0f
         self.minor = byte & 0x0f
+        return self
     
     def __gt__(self, other):
         return (self.major, self.minor) > (other.major, other.minor)
@@ -96,7 +97,7 @@ class Message:
         while i < len(header_data):
         
             # Read header ID and data type.
-            ID = struct.unpack(">B", header_data[i])[0]
+            ID = struct.unpack(">B", header_data[i:i+1])[0]
             ID_type = ID & 0xc0
             if ID_type == 0x00:
                 # text
@@ -137,7 +138,7 @@ class Message:
     
         length = self.minimum_length + sum(map(lambda h: len(h.data), self.header_data))
         args = (Message.format + self.format, self.code, length) + self.data
-        return struct.pack(*args) + "".join(map(lambda h: h.data, self.header_data))
+        return struct.pack(*args) + b"".join(map(lambda h: h.data, self.header_data))
 
 
 class MessageHandler:
@@ -148,7 +149,7 @@ class MessageHandler:
     
         def _read_packet(self, socket_):
         
-            data = ""
+            data = b""
             while len(data) < 3:
                 data += socket_.recv(3 - len(data))
             type, length = struct.unpack(self.format, data)
