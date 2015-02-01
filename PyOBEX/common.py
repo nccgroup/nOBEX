@@ -64,6 +64,7 @@ class OBEX_Version:
     def from_byte(self, byte):
         self.major = (byte >> 4) & 0x0f
         self.minor = byte & 0x0f
+        return self
     
     def __gt__(self, other):
         return (self.major, self.minor) > (other.major, other.minor)
