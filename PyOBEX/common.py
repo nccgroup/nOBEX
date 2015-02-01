@@ -169,7 +169,7 @@ class MessageHandler:
     
         code, length, data = self._read_packet(socket)
         
-        if self.message_dict.has_key(code):
+        if code in self.message_dict:
             message = self.message_dict[code]()
             message.read_data(data)
             return message

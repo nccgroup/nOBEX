@@ -91,7 +91,7 @@ class ResponseHandler(MessageHandler):
         
         if code == ConnectSuccess.code:
             message = ConnectSuccess()
-        elif self.message_dict.has_key(code):
+        elif code in self.message_dict:
             message = self.message_dict[code]()
         else:
             return self.UnknownMessageClass(code, length, data)
