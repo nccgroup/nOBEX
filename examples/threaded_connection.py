@@ -6,7 +6,6 @@
 
 import bluetooth, sys, threading
 from PyOBEX import client, responses
-from PyOBEX.common import Socket
 
 class CallerException(Exception):
 
@@ -37,17 +36,13 @@ class Caller:
 
 if __name__ == "__main__":
 
-    if len(sys.argv) != 3:
-        sys.stderr.write("Usage: %s <host bluetooth address> <device bluetooth address>\n" % sys.argv[0])
+    if len(sys.argv) != 2:
+        sys.stderr.write("Usage: %s <device bluetooth address>\n" % sys.argv[0])
         sys.exit(1)
     
-    host_address = sys.argv[1]
-    device_address = sys.argv[2]
+    device_address = sys.argv[1]
     
-    s = bluetooth.BluetoothSocket()
-    s.bind((host_address, 0))
-    
-    services = bluetooth.find_service(uuid="E006", address=device_address)
+    services = bluetooth.find_service(uuid="1106", address=device_address)
     if not services:
         sys.stderr.write("No file transfer service on the device.\n")
         sys.exit(1)
@@ -55,7 +50,6 @@ if __name__ == "__main__":
     port = services[0]["port"]
     
     c = client.BrowserClient(device_address, port)
-    c.set_socket(s)
     
     call = Caller()
     

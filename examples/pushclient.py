@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import bluetooth, os, struct, sys
-from PyOBEX import client, headers
+from PyOBEX import client, headers, responses
 
 if __name__ == "__main__":
 
@@ -15,7 +15,12 @@ if __name__ == "__main__":
     file_name = sys.argv[3]
     
     c = client.Client(device_address, port)
-    c.connect(header_list=(headers.Target("OBEXObjectPush"),))
+    r = c.connect(header_list=(headers.Target("OBEXObjectPush"),))
+    
+    if not isinstance(r, responses.ConnectSuccess):
+        sys.stderr.write("Failed to connect.\n")
+        sys.exit(1)
+    
     c.put(file_name, open(file_name).read())
     c.disconnect()
 
