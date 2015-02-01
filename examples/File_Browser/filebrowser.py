@@ -72,7 +72,7 @@ class OBEXHandler:
     
     def listdir(self, subdir = ""):
     
-        response = self.client.listdir(subdir)
+        response = self.client.listdir(subdir.lstrip("/"))
         if isinstance(response, FailureResponse):
             return False
         
@@ -119,7 +119,7 @@ class OBEXScheduler(QThread):
             
             if item:
                 if self.handler.setpath(item.path):
-                    result = self.handler.listdir(item.path)
+                    result = self.handler.listdir()
                     if result:
                         self.directoryListed.emit(item, result)
                     else:

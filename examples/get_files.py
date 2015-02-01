@@ -37,6 +37,7 @@ if __name__ == "__main__":
     sys.stdout.write("Entered directory: %s\n" % path)
     
     response = c.listdir()
+    
     if isinstance(response, responses.FailureResponse):
         sys.stderr.write("Failed to list directory.\n")
         sys.exit(1)
@@ -46,14 +47,17 @@ if __name__ == "__main__":
     for element in tree.findall("file"):
     
         name = element.attrib["name"]
+        
+        if os.path.exists(name):
+            sys.stderr.write("File already exists: %s\n" % name)
+            continue
+        
         sys.stdout.write("Fetching file: %s\n" % name)
         
         response = c.get(name)
         
         if isinstance(response, responses.FailureResponse):
             sys.stderr.write("Failed to get file: %s\n" % name)
-        elif os.path.exists(name):
-            sys.stderr.write("File already exists: %s\n" % name)
         else:
             sys.stdout.write("Writing file: %s\n" % name)
             headers, data = response
