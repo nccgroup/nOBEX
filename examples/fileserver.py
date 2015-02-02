@@ -47,10 +47,10 @@ class FileServer(server.BrowserServer):
                 for i in l:
                     objpath = os.path.join(path, i)
                     if os.path.isdir(objpath):
-                        details[i] = (os.stat(objpath)[stat.ST_CTIME])
+                        details[i] = (i, os.stat(objpath)[stat.ST_CTIME])
                         s += '  <folder name="%s" created="%s" />' % details[i]
                     else:
-                        details[i] = (os.stat(objpath)[stat.ST_CTIME], os.stat(objpath)[stat.ST_SIZE])
+                        details[i] = (i, os.stat(objpath)[stat.ST_CTIME], os.stat(objpath)[stat.ST_SIZE])
                         s += '  <file name="%s" created="%s" size="%s" />' % details[i]
                 
                 s += "</folder-listing>\n"
