@@ -205,7 +205,7 @@ class PBAPServer(Server):
             port = get_available_port(RFCOMM)
         
         name = "OBEX Phonebook Access Server"
-        uuid = PUBLIC_BROWSE_GROUP
+        uuid = "796135f0-f0c5-11d8-0966-0800200c9a66"
         service_classes = [OBEX_PBAP_CLASS]
         service_profiles = [OBEX_PBAP_PROFILE]
         provider = ""
