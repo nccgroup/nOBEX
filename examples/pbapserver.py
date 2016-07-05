@@ -6,7 +6,7 @@ from PyOBEX import headers, requests, responses, server
 class PBAPServer(server.PBAPServer):
     def __init__(self, address, directory):
         server.PBAPServer.__init__(self, address)
-        self.directory = os.path.abspath(directory)
+        self.directory = os.path.abspath(directory).rstrip(os.sep)
         self.cur_directory = self.directory
 
     def process_request(self, socket, request):
@@ -105,12 +105,18 @@ class PBAPServer(server.PBAPServer):
         open(path, "wb").write(body)
 
     def set_path(self, socket, request):
-        header = request.header_data[0]
-        name = header.decode().strip('\x00')
-        path = os.path.abspath(os.path.join(self.cur_directory, name))
+        if not request.flags & requests.Set_Path.NavigateToParent:
+            header = request.header_data[0]
+            name = header.decode().strip('\x00')
+            path = os.path.abspath(os.path.join(self.cur_directory, name))
+        else:
+            path = os.path.dirname(self.cur_directory)
+
+        path.rstrip(os.sep)
         if not path.startswith(self.directory):
             self._reject(socket)
             return
+
         print("moving to %s" % path)
         self.cur_directory = path
         self.send_response(socket, responses.Success())
