@@ -7,6 +7,7 @@ class PBAPServer(server.PBAPServer):
     def __init__(self, address, directory):
         server.PBAPServer.__init__(self, address)
         self.directory = os.path.abspath(directory)
+        self.cur_directory = self.directory
 
     def process_request(self, socket, request):
         print (request, isinstance(request, requests.Get))
@@ -29,7 +30,7 @@ class PBAPServer(server.PBAPServer):
                 mimetype = header.decode().strip(b'\x00')
                 print("Type %s" % mimetype)
 
-        path = os.path.abspath(os.path.join(self.directory, name))
+        path = os.path.abspath(os.path.join(self.cur_directory, name))
         if not path.startswith(self.directory):
             self._reject(socket)
             return
@@ -98,13 +99,20 @@ class PBAPServer(server.PBAPServer):
 
         name = name.strip(b'\x00').encode(sys.getfilesystemencoding())
         name = os.path.split(name)[1]
-        path = os.path.join(self.directory, name)
+        path = os.path.join(self.cur_directory, name)
         print("Writing", repr(path))
 
         open(path, "wb").write(body)
 
     def set_path(self, socket, request):
-        print(request.header_data)
+        header = request.header_data[0]
+        name = header.decode().strip(b'\x00')
+        path = os.path.abspath(os.path.join(self.cur_directory, name))
+        if not path.startswith(self.directory):
+            self._reject(socket)
+            return
+        print("moving to %s" % path)
+        self.cur_directory = path
 
 
 def run_server(device_address, port, directory):
