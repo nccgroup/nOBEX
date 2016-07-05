@@ -126,7 +126,10 @@ class Server:
         
         elif isinstance(request, requests.Put):
             self.put(connection, request)
-        
+       
+        elif isinstance(request, requests.Set_Path):
+            self.set_path(connection, request)
+ 
         else:
             self._reject(connection)
     
@@ -152,6 +155,10 @@ class Server:
     
     def put(self, socket, request):
     
+        self._reject(socket)
+
+    def set_path(self, socket, request):
+
         self._reject(socket)
 
 class BrowserServer(Server):

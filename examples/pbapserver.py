@@ -103,6 +103,9 @@ class PBAPServer(server.PBAPServer):
 
         open(path, "wb").write(body)
 
+    def set_path(self, socket, request):
+        print(request.header_data)
+
 
 def run_server(device_address, port, directory):
     # Run the server in a function so that, if the server causes an exception
