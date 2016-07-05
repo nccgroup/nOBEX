@@ -30,44 +30,40 @@ class PBAPServer(server.PBAPServer):
                 print("Type %s" % mimetype)
 
         path = os.path.abspath(os.path.join(self.directory, name))
+        if not path.startswith(self.directory):
+            self._reject(socket)
+            return
 
-        if os.path.isdir(path) or mimetype == b'x-obex/folder-listing':
-            details = {}
-
-            if path.startswith(self.directory):
-                l = os.listdir(path)
-                if sys.version_info.major < 3:
-                    s = u'<?xml version="1.0"?>\n<folder-listing>\n'
-                    for i in l:
-                        objpath = os.path.join(path, i)
-                        if os.path.isdir(objpath):
-                            details[i] = (i, os.stat(objpath)[stat.ST_CTIME])
-                            s += u'  <folder name="%s" created="%s" />' % details[i]
-                        else:
-                            details[i] = (i, os.stat(objpath)[stat.ST_CTIME], os.stat(objpath)[stat.ST_SIZE])
-                            s += u'  <file name="%s" created="%s" size="%s" />' % details[i]
-                    s += u'</folder-listing>\n'
-                else:
-                    s = '<?xml version="1.0"?>\n<folder-listing>\n'
-                    for i in l:
-                        objpath = os.path.join(path, i)
-                        if os.path.isdir(objpath):
-                            details[i] = (i, os.stat(objpath)[stat.ST_CTIME])
-                            s += '  <folder name="%s" created="%s" />' % details[i]
-                        else:
-                            details[i] = (i, os.stat(objpath)[stat.ST_CTIME], os.stat(objpath)[stat.ST_SIZE])
-                            s += '  <file name="%s" created="%s" size="%s" />' % details[i]
-                    s += '</folder-listing>\n'
-                print(s)
-
-                response = responses.Success()
-                response_headers = [headers.Name(name.encode("utf8")),
-                        headers.Length(len(s)),
-                        headers.Body(s.encode("utf8"))]
-                self.send_response(socket, response, response_headers)
-
-            else:
+        if os.path.isdir(path) or mimetype == b'x-bt/vcard-listing':
+            try:
+                listing = open(path + "/listing.xml", 'r')
+            except IOError:
+                sys.stderr.write("failed to open listing for %s" % path)
                 self._reject(socket)
+                return
+            s = listing.read()
+            listing.close()
+
+            response = responses.Success()
+            response_headers = [headers.Name(name.encode("utf8")),
+                    headers.Length(len(s)),
+                    headers.Body(s.encode("utf8"))]
+            self.send_response(socket, response, response_headers)
+        elif os.path.isfile(path):
+            try:
+                fd = open(path, 'r')
+            except IOError:
+                sys.stderr.write("failed to open vcard %s" % path)
+                self._reject(socket)
+                return
+            s = fd.read()
+            fd.close()
+
+            response = responses.Success()
+            response_headers = [headers.Name(name.encode("utf8")),
+                    headers.Length(len(s)),
+                    headers.Body(s.encode("utf8"))]
+            self.send_response(socket, response, response_headers)
         else:
             self._reject(socket)
 
@@ -77,9 +73,7 @@ class PBAPServer(server.PBAPServer):
         body = ""
 
         while True:
-
             for header in request.header_data:
-
                 if isinstance(header, headers.Name):
                     name = header.decode()
                     print("Receiving", name)
