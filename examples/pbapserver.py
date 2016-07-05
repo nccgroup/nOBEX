@@ -17,13 +17,13 @@ class PBAPServer(server.PBAPServer):
             server.BrowserServer.process_request(self, socket, request)
 
     def get(self, socket, request):
-        name = b''
+        name = ''
         mimetype = b''
 
         for header in request.header_data:
             print(header)
             if isinstance(header, headers.Name):
-                name = header.decode().strip(b'\x00')
+                name = header.decode().strip('\x00')
                 print("Receiving request for %s" % name)
 
             elif isinstance(header, headers.Type):
@@ -46,7 +46,7 @@ class PBAPServer(server.PBAPServer):
             listing.close()
 
             response = responses.Success()
-            response_headers = [headers.Name(name.encode("utf8")),
+            response_headers = [headers.Name(name),
                     headers.Length(len(s)),
                     headers.Body(s.encode("utf8"))]
             self.send_response(socket, response, response_headers)
@@ -61,7 +61,7 @@ class PBAPServer(server.PBAPServer):
             fd.close()
 
             response = responses.Success()
-            response_headers = [headers.Name(name.encode("utf8")),
+            response_headers = [headers.Name(name),
                     headers.Length(len(s)),
                     headers.Body(s.encode("utf8"))]
             self.send_response(socket, response, response_headers)
@@ -97,7 +97,7 @@ class PBAPServer(server.PBAPServer):
 
         self.send_response(socket, responses.Success())
 
-        name = name.strip(b'\x00').encode(sys.getfilesystemencoding())
+        name = name.strip('\x00').encode(sys.getfilesystemencoding())
         name = os.path.split(name)[1]
         path = os.path.join(self.cur_directory, name)
         print("Writing", repr(path))
@@ -106,13 +106,14 @@ class PBAPServer(server.PBAPServer):
 
     def set_path(self, socket, request):
         header = request.header_data[0]
-        name = header.decode().strip(b'\x00')
+        name = header.decode().strip('\x00')
         path = os.path.abspath(os.path.join(self.cur_directory, name))
         if not path.startswith(self.directory):
             self._reject(socket)
             return
         print("moving to %s" % path)
         self.cur_directory = path
+        self.send_response(socket, responses.Success())
 
 
 def run_server(device_address, port, directory):
