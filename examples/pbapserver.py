@@ -118,14 +118,13 @@ def run_server(device_address, port, directory):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-
-        sys.stderr.write("Usage: %s <device address> <port> <directory>\n" % sys.argv[0])
+    if len(sys.argv) != 2:
+        sys.stderr.write("Usage: %s <directory>\n" % sys.argv[0])
         sys.exit(1)
 
-    device_address = sys.argv[1]
-    port = int(sys.argv[2])
-    directory = sys.argv[3]
+    device_address = ""
+    port = bluetooth.PORT_ANY
+    directory = sys.argv[1]
 
     if not os.path.exists(directory):
         os.mkdir(directory)
