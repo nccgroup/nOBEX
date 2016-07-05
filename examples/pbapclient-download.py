@@ -2,11 +2,21 @@
 
 import bluetooth, os, struct, sys
 from xml.etree import ElementTree
+from xml.dom import minidom
 from PyOBEX import client, headers, responses
 
 def usage():
     sys.stderr.write("Usage: %s <device address> <dest directory> [SIM]\n" % sys.argv[0])
     sys.exit(1)
+
+def dump_xml(element, file_name):
+    fd = open(file_name, 'w')
+    fd.write('<?xml version="1.0"?>\n<!DOCTYPE vcard-listing SYSTEM "vcard-listing.dtd">\n')
+    rough_string = ElementTree.tostring(element, 'utf-8')
+    reparsed = minidom.parseString(rough_string)
+    pretty_string = reparsed.toprettyxml()
+    fd.write(pretty_string[23:]) # skip xml declaration
+    fd.close()
 
 def connect(device_address):
     d = bluetooth.find_service(address=device_address, uuid="1130")
@@ -60,6 +70,7 @@ def dump_dir(c, src_path, dest_path):
     # Extract a list of file names in the directory
     names = []
     root = ElementTree.fromstring(cards)
+    dump_xml(root, "/".join([dest_path, "listing.xml"]))
     for card in root.findall("card"):
         names.append(card.attrib["handle"])
 
