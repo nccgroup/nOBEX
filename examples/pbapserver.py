@@ -105,14 +105,19 @@ class PBAPServer(server.PBAPServer):
         open(path, "wb").write(body)
 
     def set_path(self, socket, request):
-        if not request.flags & requests.Set_Path.NavigateToParent:
+        if request.flags & requests.Set_Path.NavigateToParent:
+            path = os.path.dirname(self.cur_directory)
+        else:
             header = request.header_data[0]
             name = header.decode().strip('\x00')
-            path = os.path.abspath(os.path.join(self.cur_directory, name))
-        else:
-            path = os.path.dirname(self.cur_directory)
+            if len(name) == 0 and (
+                    request.flags & requests.Set_Path.DontCreateDir):
+                # see bluetooth PBAP spec section 5.3 PullvCardListing Function
+                path = self.directory
+            else:
+                path = os.path.abspath(os.path.join(self.cur_directory, name))
 
-        path.rstrip(os.sep)
+        path = path.rstrip(os.sep)
         if not path.startswith(self.directory):
             self._reject(socket)
             return
