@@ -2,6 +2,7 @@
 
 import bluetooth, os, stat, struct, sys
 from PyOBEX import headers, requests, responses, server
+from threading import Thread
 
 class PBAPServer(server.PBAPServer):
     def __init__(self, address, directory):
@@ -127,32 +128,43 @@ class PBAPServer(server.PBAPServer):
         self.send_response(socket, responses.Success())
 
 
-def run_server(device_address, port, directory):
+def run_server(device_address, port, directory, hfp=False):
     # Run the server in a function so that, if the server causes an exception
     # to be raised, the server instance will be deleted properly, giving us a
     # chance to create a new one and start the service again without getting
     # errors about the address still being in use.
+    server_ = PBAPServer(device_address, directory)
+    socket = server_.start_service(port)
+
+    # launch the dummy Hands Free Profile Server
+    if hfp:
+        server2 = server.HFPDummyServer(device_address)
+        socket2 = server2.start_service(port)
+        st = Thread(target=server2.serve, args=(socket2,))
+        st.start()
+
     try:
-        server = PBAPServer(device_address, directory)
-        socket = server.start_service(port)
-        server.serve(socket)
+        server_.serve(socket)
     except IOError:
-        server.stop_service(socket)
+        server_.stop_service(socket)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        sys.stderr.write("Usage: %s <directory>\n" % sys.argv[0])
+    if not (2 <= len(sys.argv) <= 3):
+        sys.stderr.write("Usage: %s <directory> [hfp]\n" % sys.argv[0])
         sys.exit(1)
 
+    hfp = False
     device_address = ""
     port = bluetooth.PORT_ANY
     directory = sys.argv[1]
+    if len(sys.argv) > 2 and sys.argv[2] == "hfp":
+        hfp = True
 
     if not os.path.exists(directory):
         os.mkdir(directory)
 
     while True:
-        run_server(device_address, port, directory)
+        run_server(device_address, port, directory, hfp)
 
     sys.exit()
