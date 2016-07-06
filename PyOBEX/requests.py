@@ -110,8 +110,10 @@ class Abort(Request):
     format = ""
 
 class UnknownRequest(Request):
-
-    pass
+    def __init__(self, code, length, data):
+        self.code = code
+        self.length = length
+        self.data = data[3:]
 
 class RequestHandler(MessageHandler):
 
