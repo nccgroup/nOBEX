@@ -24,7 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from bluetooth import BluetoothSocket, RFCOMM, OBEX_FILETRANS_CLASS, \
     OBEX_FILETRANS_PROFILE, OBEX_OBJPUSH_CLASS, OBEX_OBJPUSH_PROFILE, \
     OBEX_UUID, PUBLIC_BROWSE_GROUP, RFCOMM_UUID, advertise_service, \
-    stop_advertising
+    stop_advertising, HANDSFREE_AGW_CLASS, GENERIC_AUDIO_CLASS, \
+    HANDSFREE_PROFILE
 
 from PyOBEX.common import OBEX_Version
 from PyOBEX import headers
@@ -218,6 +219,26 @@ class PBAPServer(Server):
         provider = ""
         description = ""
         protocols = [RFCOMM_UUID, OBEX_UUID]
+        
+        return Server.start_service(
+            self, port, name, uuid, service_classes, service_profiles,
+            provider, description, protocols
+            )
+
+class HFPDummyServer(Server):
+
+    def start_service(self, port = None):
+    
+        if port is None:
+            port = get_available_port(RFCOMM)
+        
+        name = "Handsfree Gateway"
+        uuid = PUBLIC_BROWSE_GROUP
+        service_classes = [HANDSFREE_AGW_CLASS, GENERIC_AUDIO_CLASS]
+        service_profiles = [HANDSFREE_PROFILE]
+        provider = ""
+        description = ""
+        protocols = [RFCOMM_UUID]
         
         return Server.start_service(
             self, port, name, uuid, service_classes, service_profiles,
