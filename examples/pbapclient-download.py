@@ -18,6 +18,13 @@ def dump_xml(element, file_name):
     fd.write(pretty_string[23:]) # skip xml declaration
     fd.close()
 
+def escape_ampersands(s):
+    # Terrible hack to work around Python getting mad at things like
+    # <foo goo="Moo & Roo" />
+    us = str(s, encoding='utf-8')
+    us2 = '&amp;'.join(us.split('&'))
+    return bytes(us2, encoding='utf-8')
+
 def connect(device_address):
     d = bluetooth.find_service(address=device_address, uuid="1130")
     if not d:
@@ -69,7 +76,10 @@ def dump_dir(c, src_path, dest_path):
     # Parse the XML response to the previous request.
     # Extract a list of file names in the directory
     names = []
-    root = ElementTree.fromstring(cards)
+    try:
+        root = ElementTree.fromstring(cards)
+    except ElementTree.ParseError:
+        root = ElementTree.fromstring(escape_ampersands(cards))
     dump_xml(root, "/".join([dest_path, "listing.xml"]))
     for card in root.findall("card"):
         names.append(card.attrib["handle"])
