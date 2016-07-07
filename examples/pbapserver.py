@@ -4,6 +4,19 @@ import bluetooth, os, stat, struct, sys
 from PyOBEX import headers, requests, responses, server
 from threading import Thread
 
+class HFPDummyServer(server.Server):
+    def start_service(self, port=bluetooth.PORT_ANY):
+        name = "Handsfree Gateway"
+        uuid = bluetooth.PUBLIC_BROWSE_GROUP
+        service_classes = [bluetooth.HANDSFREE_AGW_CLASS, bluetooth.GENERIC_AUDIO_CLASS]
+        service_profiles = [bluetooth.HANDSFREE_PROFILE]
+        provider = ""
+        description = ""
+        protocols = [bluetooth.RFCOMM_UUID]
+
+        return server.Server.start_service(self, port, name, uuid, service_classes,
+                service_profiles, provider, description, protocols)
+
 class PBAPServer(server.PBAPServer):
     def __init__(self, address, directory):
         server.PBAPServer.__init__(self, address)
@@ -138,7 +151,7 @@ def run_server(device_address, port, directory, hfp=False):
 
     # launch the dummy Hands Free Profile Server
     if hfp:
-        server2 = server.HFPDummyServer(device_address)
+        server2 = HFPDummyServer(device_address)
         socket2 = server2.start_service(port)
         st = Thread(target=server2.serve, args=(socket2,))
         st.start()
