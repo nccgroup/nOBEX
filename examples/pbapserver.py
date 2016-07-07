@@ -1,10 +1,25 @@
 #!/usr/bin/env python
 
-import bluetooth, os, stat, struct, sys
+import bluetooth, os, stat, struct, socket, sys
 from PyOBEX import headers, requests, responses, server
 from threading import Thread
 
+class HFPMessageHandler(object):
+    def decode(self, socket_):
+        msg = bytearray()
+        while not msg.endswith(b'\n'):
+            try:
+                msg.extend(socket_.recv(1, socket.MSG_WAITALL))
+            except bluetooth.btcommon.BluetoothError:
+                print("connection reset")
+                break
+        return bytes(msg)
+
 class HFPDummyServer(server.Server):
+    def __init__(self, *args, **kwargs):
+        super(HFPDummyServer, self).__init__(*args, **kwargs)
+        self.request_handler = HFPMessageHandler()
+
     def start_service(self, port=bluetooth.PORT_ANY):
         name = "Handsfree Gateway"
         uuid = bluetooth.PUBLIC_BROWSE_GROUP
@@ -16,6 +31,10 @@ class HFPDummyServer(server.Server):
 
         return server.Server.start_service(self, port, name, uuid, service_classes,
                 service_profiles, provider, description, protocols)
+
+    def process_request(self, connection, cmd):
+        print("received AT cmd: %s" % cmd)
+
 
 class PBAPServer(server.PBAPServer):
     def __init__(self, address, directory):
