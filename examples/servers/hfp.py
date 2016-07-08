@@ -17,7 +17,7 @@ class HFPDummyServer(server.Server):
         super(HFPDummyServer, self).__init__(*args, **kwargs)
         self.request_handler = HFPMessageHandler()
 
-    def start_service(self, port=bluetooth.PORT_ANY):
+    def start_service(self, port=3):
         name = "Handsfree Gateway"
         uuid = bluetooth.PUBLIC_BROWSE_GROUP
         service_classes = [bluetooth.HANDSFREE_AGW_CLASS, bluetooth.GENERIC_AUDIO_CLASS]

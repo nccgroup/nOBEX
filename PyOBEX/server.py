@@ -183,10 +183,7 @@ class PushServer(Server):
                 service_profiles, provider, description, protocols)
 
 class PBAPServer(Server):
-    def start_service(self, port = None):
-        if port is None:
-            port = get_available_port(RFCOMM)
-
+    def start_service(self, port = 19):
         name = "Phonebook Access Server"
         uuid = "796135f0-f0c5-11d8-0966-0800200c9a66"
         service_classes = [OBEX_PBAP_CLASS]
@@ -199,10 +196,7 @@ class PBAPServer(Server):
                 service_profiles, provider, description, protocols)
 
 class MAPServer(Server):
-    def start_service(self, port = None):
-        if port is None:
-            port = get_available_port(RFCOMM)
-
+    def start_service(self, port = 4):
         name = "SMS/MMS"
         uuid = PUBLIC_BROWSE_GROUP
         service_classes = [OBEX_MAP_CLASS]
