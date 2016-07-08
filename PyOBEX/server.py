@@ -32,7 +32,9 @@ from PyOBEX import requests
 from PyOBEX import responses
 
 OBEX_PBAP_CLASS = "112F"
-OBEX_PBAP_PROFILE = ("1130", 0x0100)
+OBEX_PBAP_PROFILE = ("1130", 0x0101)
+OBEX_MAP_CLASS = "1132"
+OBEX_MAP_PROFILE = ("1134", 0x0102)
 
 class Server:
 
@@ -211,10 +213,30 @@ class PBAPServer(Server):
         if port is None:
             port = get_available_port(RFCOMM)
         
-        name = "OBEX Phonebook Access Server"
+        name = "Phonebook Access Server"
         uuid = "796135f0-f0c5-11d8-0966-0800200c9a66"
         service_classes = [OBEX_PBAP_CLASS]
         service_profiles = [OBEX_PBAP_PROFILE]
+        provider = ""
+        description = ""
+        protocols = [RFCOMM_UUID, OBEX_UUID]
+        
+        return Server.start_service(
+            self, port, name, uuid, service_classes, service_profiles,
+            provider, description, protocols
+            )
+
+class MAPServer(Server):
+
+    def start_service(self, port = None):
+    
+        if port is None:
+            port = get_available_port(RFCOMM)
+        
+        name = "SMS/MMS"
+        uuid = PUBLIC_BROWSE_GROUP
+        service_classes = [OBEX_MAP_CLASS]
+        service_profiles = [OBEX_MAP_PROFILE]
         provider = ""
         description = ""
         protocols = [RFCOMM_UUID, OBEX_UUID]
