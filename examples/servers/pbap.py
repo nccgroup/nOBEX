@@ -3,7 +3,7 @@ from PyOBEX import headers, requests, responses, server
 
 class PBAPServer(server.PBAPServer):
     def __init__(self, address, directory):
-        server.PBAPServer.__init__(self, address)
+        super(PBAPServer, self).__init__(address)
         self.directory = os.path.abspath(directory).rstrip(os.sep)
         self.cur_directory = self.directory
 
@@ -12,7 +12,7 @@ class PBAPServer(server.PBAPServer):
         if isinstance(request, requests.Get):
             self.get(socket, request)
         else:
-            server.BrowserServer.process_request(self, socket, request)
+            super(PBAPServer, self).process_request(socket, request)
 
     def get(self, socket, request):
         name = ''

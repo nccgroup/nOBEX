@@ -5,7 +5,7 @@ class FTPServer(server.BrowserServer):
     """OBEX File Transfer Profile Server"""
 
     def __init__(self, address, directory):
-        server.BrowserServer.__init__(self, address)
+        super(FTPServer, self).__init__(address)
         self.directory = os.path.abspath(directory)
 
     def process_request(self, socket, request):
@@ -13,7 +13,7 @@ class FTPServer(server.BrowserServer):
         if isinstance(request, requests.Get):
             self.get(socket, request)
         else:
-            server.BrowserServer.process_request(self, socket, request)
+            super(FTPServer, self).process_request(socket, request)
 
     def get(self, socket, request):
         name = ""

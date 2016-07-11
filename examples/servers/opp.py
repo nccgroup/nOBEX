@@ -5,7 +5,7 @@ class OPPServer(server.PushServer):
     """OBEX Object Push Profile Server"""
 
     def __init__(self, address, directory):
-        server.PushServer.__init__(self, address)
+        super(OPPServer, self).__init__(address)
         self.directory = directory
 
     def put(self, socket, request):
