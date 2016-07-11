@@ -1,5 +1,6 @@
 import os, socket, sys
 from PyOBEX import headers, requests, responses, server
+from .ftp import gen_folder_listing
 
 def gen_handle():
     """Generate a random 64 bit hex handle"""
@@ -35,16 +36,8 @@ class MAPServer(server.MAPServer):
             return
 
         if os.path.isdir(path) and mimetype == b'x-bt/MAP-msg-listing':
-            if mimetype == b'x-bt/MAP-msg-listing':
-                lfile = path + "/mlisting.xml"
-            elif mimetype == b'x-obex/folder-listing':
-                lfile = path + "/listing.xml"
-            else:
-                self._reject(socket)
-                return
-
             try:
-                listing = open(lfile, 'r')
+                listing = open(path + "/mlisting.xml", 'r')
             except IOError:
                 sys.stderr.write("failed to open listing for %s" % path)
                 self._reject(socket)
@@ -52,6 +45,13 @@ class MAPServer(server.MAPServer):
             s = listing.read()
             listing.close()
 
+            response = responses.Success()
+            response_headers = [headers.Name(name),
+                    headers.Length(len(s)),
+                    headers.Body(s.encode("utf8"))]
+            self.send_response(socket, response, response_headers)
+        elif os.path.isdir(path) and mimetype == b'x-obex/folder-listing':
+            s = gen_folder_listing(path)
             response = responses.Success()
             response_headers = [headers.Name(name),
                     headers.Length(len(s)),

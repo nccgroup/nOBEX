@@ -1,6 +1,23 @@
 import bluetooth, os, stat, sys
 from PyOBEX import headers, requests, responses, server
 
+def gen_folder_listing(path):
+    details = {}
+    l = os.listdir(path)
+    s = '<?xml version="1.0"?>\n<folder-listing>\n'
+    for i in l:
+        objpath = os.path.join(path, i)
+        if os.path.isdir(objpath):
+            details[i] = (i, os.stat(objpath)[stat.ST_CTIME])
+            s += '  <folder name="%s" created="%s" />' % details[i]
+        else:
+            details[i] = (i, os.stat(objpath)[stat.ST_CTIME], os.stat(objpath)[stat.ST_SIZE])
+            s += '  <file name="%s" created="%s" size="%s" />' % details[i]
+
+    s += "</folder-listing>\n"
+
+    return s
+
 class FTPServer(server.BrowserServer):
     """OBEX File Transfer Profile Server"""
 
@@ -28,18 +45,7 @@ class FTPServer(server.BrowserServer):
             details = {}
 
             if path.startswith(self.directory):
-                l = os.listdir(path)
-                s = '<?xml version="1.0"?>\n<folder-listing>\n'
-                for i in l:
-                    objpath = os.path.join(path, i)
-                    if os.path.isdir(objpath):
-                        details[i] = (i, os.stat(objpath)[stat.ST_CTIME])
-                        s += '  <folder name="%s" created="%s" />' % details[i]
-                    else:
-                        details[i] = (i, os.stat(objpath)[stat.ST_CTIME], os.stat(objpath)[stat.ST_SIZE])
-                        s += '  <file name="%s" created="%s" size="%s" />' % details[i]
-
-                s += "</folder-listing>\n"
+                s = gen_folder_listing(path)
                 print(s)
 
                 response = responses.Success()
@@ -47,7 +53,6 @@ class FTPServer(server.BrowserServer):
                         headers.Length(len(s)),
                         headers.Body(s.encode("utf8"))]
                 self.send_response(socket, response, response_headers)
-
             else:
                 self._reject(socket)
         else:
