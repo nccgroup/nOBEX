@@ -7,13 +7,6 @@ class PBAPServer(server.PBAPServer):
         self.directory = os.path.abspath(directory).rstrip(os.sep)
         self.cur_directory = self.directory
 
-    def process_request(self, socket, request):
-        print (request, isinstance(request, requests.Get))
-        if isinstance(request, requests.Get):
-            self.get(socket, request)
-        else:
-            super(PBAPServer, self).process_request(socket, request)
-
     def get(self, socket, request):
         name = ''
         mimetype = b''

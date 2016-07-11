@@ -72,7 +72,6 @@ class Server:
 
             while self.connected:
                 request = self.request_handler.decode(connection)
-
                 self.process_request(connection, request)
 
     def _max_length(self):
@@ -107,10 +106,13 @@ class Server:
         more request types.
         """
 
+        #print(request)
         if isinstance(request, requests.Connect):
             self.connect(connection, request)
         elif isinstance(request, requests.Disconnect):
             self.disconnect(connection, request)
+        elif isinstance(request, requests.Get):
+            self.get(connection, request)
         elif isinstance(request, requests.Put):
             self.put(connection, request)
         elif isinstance(request, requests.Set_Path):
@@ -135,6 +137,9 @@ class Server:
         response = responses.Success()
         self.send_response(socket, response)
         self.connected = False
+
+    def get(self, socket, request):
+        self._reject(socket)
 
     def put(self, socket, request):
         self._reject(socket)

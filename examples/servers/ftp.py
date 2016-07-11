@@ -8,13 +8,6 @@ class FTPServer(server.BrowserServer):
         super(FTPServer, self).__init__(address)
         self.directory = os.path.abspath(directory)
 
-    def process_request(self, socket, request):
-        print (request, isinstance(request, requests.Get))
-        if isinstance(request, requests.Get):
-            self.get(socket, request)
-        else:
-            super(FTPServer, self).process_request(socket, request)
-
     def get(self, socket, request):
         name = ""
         type = ""
