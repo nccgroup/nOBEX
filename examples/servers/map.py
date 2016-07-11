@@ -1,5 +1,14 @@
-import os, socket, sys, uuid
+import os, socket, sys
 from PyOBEX import headers, requests, responses, server
+
+def gen_handle():
+    """Generate a random 64 bit hex handle"""
+    rb = os.urandom(8)
+    if sys.version_info.major >= 3:
+        return "".join(["%02X" % i for i in rb])
+    else:
+        return "".join(["%02X" % ord(c) for c in rb])
+
 
 class MAPServer(server.MAPServer):
     def __init__(self, address, directory):
@@ -107,7 +116,7 @@ class MAPServer(server.MAPServer):
             name = name.strip('\x00').encode(sys.getfilesystemencoding())
             name = os.path.split(name)[1]
             path = os.path.join(self.cur_directory, name)
-            path = os.path.join(path, str(uuid.uuid4()))
+            path = os.path.join(path, gen_handle())
             path = os.path.abspath(path)
             print("Push message", repr(path))
             open(path, "wb").write(body)
