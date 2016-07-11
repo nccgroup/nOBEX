@@ -25,19 +25,16 @@ import struct
 from PyOBEX.common import OBEX_Version, Message, MessageHandler
 
 class Response(Message):
-
     # Define the additional format information required by responses.
     # Subclasses should redefine this when required to ensure that their
     # minimum lengths are calculated correctly.
     format = ""
-    
-    def __init__(self, data = (), header_data = ()):
 
+    def __init__(self, data = (), header_data = ()):
         Message.__init__(self, data, header_data)
         self.minimum_length = self.length(Message.format + self.format)
 
 class FailureResponse(Response):
-
     pass
 
 class Continue(Response):
@@ -73,31 +70,29 @@ class UnknownResponse(Response):
 
 
 class ResponseHandler(MessageHandler):
-
     message_dict = {
-        Continue.code: Continue,
-        Success.code: Success,
-        Bad_Request.code: Bad_Request,
-        Unauthorized.code: Unauthorized,
-        Not_Found.code: Not_Found,
-        Precondition_Failed.code: Precondition_Failed
-        }
-    
+            Continue.code: Continue,
+            Success.code: Success,
+            Bad_Request.code: Bad_Request,
+            Unauthorized.code: Unauthorized,
+            Not_Found.code: Not_Found,
+            Precondition_Failed.code: Precondition_Failed
+    }
+
     UnknownMessageClass = UnknownResponse
-    
+
     def decode_connection(self, socket):
-    
         code, length, data = self._read_packet(socket)
-        
+
         if code == ConnectSuccess.code:
             message = ConnectSuccess()
         elif code in self.message_dict:
             message = self.message_dict[code]()
         else:
             return self.UnknownMessageClass(code, length, data)
-        
+
         obex_version, flags, max_packet_length = struct.unpack(">BBH", data[3:7])
-        
+
         message.obex_version = OBEX_Version()
         message.obex_version.from_byte(obex_version)
         message.flags = flags

@@ -22,9 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from bluetooth import BluetoothSocket, RFCOMM, OBEX_FILETRANS_CLASS, \
-    OBEX_FILETRANS_PROFILE, OBEX_OBJPUSH_CLASS, OBEX_OBJPUSH_PROFILE, \
-    OBEX_UUID, PUBLIC_BROWSE_GROUP, RFCOMM_UUID, advertise_service, \
-    stop_advertising
+        OBEX_FILETRANS_PROFILE, OBEX_OBJPUSH_CLASS, OBEX_OBJPUSH_PROFILE, \
+        OBEX_UUID, PUBLIC_BROWSE_GROUP, RFCOMM_UUID, advertise_service, \
+        stop_advertising
 
 from PyOBEX.common import OBEX_Version
 from PyOBEX import headers
@@ -37,139 +37,116 @@ OBEX_MAP_CLASS = "1132"
 OBEX_MAP_PROFILE = ("1134", 0x0102)
 
 class Server:
-
     def __init__(self, address = ""):
-    
         self.address = address
         self.max_packet_length = 0xffff
         self.obex_version = OBEX_Version()
         self.request_handler = requests.RequestHandler()
-    
+
     def start_service(self, port, name, uuid, service_classes, service_profiles,
-                      provider, description, protocols):
-    
+            provider, description, protocols):
         socket = BluetoothSocket(RFCOMM)
         socket.bind((self.address, port))
         socket.listen(1)
-        
+
         advertise_service(
-            socket, name, uuid, service_classes, service_profiles,
-            provider, description, protocols
-            )
-        
+                socket, name, uuid, service_classes, service_profiles,
+                provider, description, protocols
+                )
+
         print("Starting server for %s on port %i" % socket.getsockname())
         #self.serve(socket)
         return socket
-    
+
     def stop_service(self, socket):
-    
         stop_advertising(socket)
-    
+
     def serve(self, socket):
-    
         while True:
-        
             connection, address = socket.accept()
             if not self.accept_connection(*address):
                 connection.close()
                 continue
-            
+
             self.connected = True
-            
+
             while self.connected:
-            
                 request = self.request_handler.decode(connection)
-                
+
                 self.process_request(connection, request)
-    
+
     def _max_length(self):
-    
         if hasattr(self, "remote_info"):
             return self.remote_info.max_packet_length
         else:
             return self.max_packet_length
-    
+
     def send_response(self, socket, response, header_list = []):
-    
         ### TODO: This needs to be able to split messages that are longer than
         ### the maximum message length agreed with the other party.
         while header_list:
-        
             if response.add_header(header_list[0], self._max_length()):
                 header_list.pop(0)
             else:
                 socket.sendall(response.encode())
                 response.reset_headers()
-        
+
         # Always send at least one request.
         socket.sendall(response.encode())
-    
+
     def _reject(self, socket):
-    
         self.send_response(socket, responses.Forbidden())
-    
+
     def accept_connection(self, address, port):
-    
         return True
-    
+
     def process_request(self, connection, request):
-    
         """Processes the request from the connection.
-        
+
         This method should be reimplemented in subclasses to add support for
         more request types.
         """
-        
+
         if isinstance(request, requests.Connect):
             self.connect(connection, request)
-        
         elif isinstance(request, requests.Disconnect):
             self.disconnect(connection, request)
-        
         elif isinstance(request, requests.Put):
             self.put(connection, request)
-       
         elif isinstance(request, requests.Set_Path):
             self.set_path(connection, request)
- 
         else:
             self._reject(connection)
-    
+
     def connect(self, socket, request):
-    
         if request.obex_version > self.obex_version:
             self._reject(socket)
-        
+
         self.remote_info = request
         max_length = self.remote_info.max_packet_length
-        
+
         flags = 0
         data = (self.obex_version.to_byte(), flags, max_length)
-        
+
         response = responses.ConnectSuccess(data)
         self.send_response(socket, response)
-    
+
     def disconnect(self, socket, request):
-    
         response = responses.Success()
         self.send_response(socket, response)
         self.connected = False
-    
+
     def put(self, socket, request):
-    
         self._reject(socket)
 
     def set_path(self, socket, request):
-
         self._reject(socket)
 
 class BrowserServer(Server):
-
     def start_service(self, port = None):
-    
         if port is None:
             port = get_available_port(RFCOMM)
-        
+
         name = "OBEX File Transfer"
         # "E006" also appears to work if used as a service ID. However, 1106
         # is the official profile number:
@@ -180,19 +157,15 @@ class BrowserServer(Server):
         provider = ""
         description = "File transfer"
         protocols = [OBEX_UUID]
-        
-        return Server.start_service(
-            self, port, name, uuid, service_classes, service_profiles,
-            provider, description, protocols
-            )
+
+        return Server.start_service(self, port, name, uuid, service_classes,
+                service_profiles, provider, description, protocols)
 
 class PushServer(Server):
-
     def start_service(self, port = None):
-    
         if port is None:
             port = get_available_port(RFCOMM)
-        
+
         name = "OBEX Object Push"
         uuid = PUBLIC_BROWSE_GROUP
         service_classes = [OBEX_OBJPUSH_CLASS]
@@ -200,19 +173,15 @@ class PushServer(Server):
         provider = ""
         description = "File transfer"
         protocols = [RFCOMM_UUID, OBEX_UUID]
-        
-        return Server.start_service(
-            self, port, name, uuid, service_classes, service_profiles,
-            provider, description, protocols
-            )
+
+        return Server.start_service(self, port, name, uuid, service_classes,
+                service_profiles, provider, description, protocols)
 
 class PBAPServer(Server):
-
     def start_service(self, port = None):
-    
         if port is None:
             port = get_available_port(RFCOMM)
-        
+
         name = "Phonebook Access Server"
         uuid = "796135f0-f0c5-11d8-0966-0800200c9a66"
         service_classes = [OBEX_PBAP_CLASS]
@@ -220,19 +189,15 @@ class PBAPServer(Server):
         provider = ""
         description = ""
         protocols = [RFCOMM_UUID, OBEX_UUID]
-        
-        return Server.start_service(
-            self, port, name, uuid, service_classes, service_profiles,
-            provider, description, protocols
-            )
+
+        return Server.start_service(self, port, name, uuid, service_classes,
+                service_profiles, provider, description, protocols)
 
 class MAPServer(Server):
-
     def start_service(self, port = None):
-    
         if port is None:
             port = get_available_port(RFCOMM)
-        
+
         name = "SMS/MMS"
         uuid = PUBLIC_BROWSE_GROUP
         service_classes = [OBEX_MAP_CLASS]
@@ -240,8 +205,6 @@ class MAPServer(Server):
         provider = ""
         description = ""
         protocols = [RFCOMM_UUID, OBEX_UUID]
-        
-        return Server.start_service(
-            self, port, name, uuid, service_classes, service_profiles,
-            provider, description, protocols
-            )
+
+        return Server.start_service(self, port, name, uuid, service_classes,
+                service_profiles, provider, description, protocols)
