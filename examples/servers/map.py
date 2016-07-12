@@ -21,6 +21,7 @@ class MAPServer(server.MAPServer):
         name = ''
         mimetype = b''
 
+        print("\nget")
         for header in request.header_data:
             print(header)
             if isinstance(header, headers.Name):
@@ -46,15 +47,13 @@ class MAPServer(server.MAPServer):
             listing.close()
 
             response = responses.Success()
-            response_headers = [headers.Name(name),
-                    headers.Length(len(s)),
+            response_headers = [headers.Length(len(s)),
                     headers.Body(s.encode("utf8"))]
             self.send_response(socket, response, response_headers)
         elif os.path.isdir(path) and mimetype == b'x-obex/folder-listing':
             s = gen_folder_listing(path)
             response = responses.Success()
-            response_headers = [headers.Name(name),
-                    headers.Length(len(s)),
+            response_headers = [headers.Length(len(s)),
                     headers.Body(s.encode("utf8"))]
             self.send_response(socket, response, response_headers)
         elif os.path.isfile(path) and mimetype == b'x-bt/message':
@@ -68,8 +67,7 @@ class MAPServer(server.MAPServer):
             fd.close()
 
             response = responses.Success()
-            response_headers = [headers.Name(name),
-                    headers.Length(len(s)),
+            response_headers = [headers.Length(len(s)),
                     headers.Body(s.encode("utf8"))]
             self.send_response(socket, response, response_headers)
         else:
@@ -81,6 +79,7 @@ class MAPServer(server.MAPServer):
         body = b''
         mimetype = b''
 
+        print("\nput")
         while True:
             for header in request.header_data:
                 if isinstance(header, headers.Name):
@@ -120,10 +119,11 @@ class MAPServer(server.MAPServer):
             path = os.path.abspath(path)
             print("Push message", repr(path))
             open(path, "wb").write(body)
+            resp_headers.append(headers.Name(name))
         elif mimetype == b'x-bt/MAP-messageUpdate':
             print("MAP inbox update requested")
 
-        self.send_response(socket, responses.Success())
+        self.send_response(socket, responses.Success(), resp_headers)
 
     def set_path(self, socket, request):
         if request.flags & requests.Set_Path.NavigateToParent:
