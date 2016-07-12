@@ -11,6 +11,17 @@ def gen_handle():
         return "".join(["%02X" % ord(c) for c in rb])
 
 
+def gen_body_headers(data, csize=65500):
+    """Generate a list of body headers (to encapsulate large data)"""
+    hdrs = []
+    i = 0
+    while i < len(data):
+        chunk = data[i:i+csize]
+        hdrs.append(headers.Body(chunk))
+        i += csize
+    return hdrs
+
+
 class MAPServer(server.MAPServer):
     def __init__(self, address, directory):
         super(MAPServer, self).__init__(address)
@@ -49,14 +60,14 @@ class MAPServer(server.MAPServer):
             listing.close()
 
             response = responses.Success()
-            response_headers = [headers.Length(len(s)),
-                    headers.Body(s.encode("utf8"))]
+            response_headers = [headers.Length(len(s))] + \
+                    gen_body_headers(s.encode("utf8"))
             self.send_response(socket, response, response_headers)
         elif os.path.isdir(path) and mimetype == b'x-obex/folder-listing':
             s = gen_folder_listing(path)
             response = responses.Success()
-            response_headers = [headers.Length(len(s)),
-                    headers.Body(s.encode("utf8"))]
+            response_headers = [headers.Length(len(s))] + \
+                    gen_body_headers(s.encode("utf8"))
             self.send_response(socket, response, response_headers)
         elif os.path.isfile(path) and mimetype == b'x-bt/message':
             try:
@@ -69,8 +80,8 @@ class MAPServer(server.MAPServer):
             fd.close()
 
             response = responses.Success()
-            response_headers = [headers.Length(len(s)),
-                    headers.Body(s.encode("utf8"))]
+            response_headers = [headers.Length(len(s))] + \
+                    gen_body_headers(s.encode("utf8"))
             self.send_response(socket, response, response_headers)
         else:
             self._reject(socket)
