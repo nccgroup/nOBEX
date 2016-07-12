@@ -1,18 +1,24 @@
 import bluetooth, os, stat, sys
 from PyOBEX import headers, requests, responses, server
+from datetime import datetime
+
+def unix2bluetime(unix_time):
+    t = datetime.fromtimestamp(unix_time)
+    return t.strftime("%Y%m%dT%H%M%S")
 
 def gen_folder_listing(path):
-    details = {}
     l = os.listdir(path)
     s = '<?xml version="1.0"?>\n<folder-listing>\n'
+
     for i in l:
         objpath = os.path.join(path, i)
         if os.path.isdir(objpath):
-            details[i] = (i, os.stat(objpath)[stat.ST_CTIME])
-            s += '  <folder name="%s" created="%s" />' % details[i]
+            args = (i, unix2bluetime(os.stat(objpath)[stat.ST_CTIME]))
+            s += '  <folder name="%s" created="%s" />' % args
         else:
-            details[i] = (i, os.stat(objpath)[stat.ST_CTIME], os.stat(objpath)[stat.ST_SIZE])
-            s += '  <file name="%s" created="%s" size="%s" />' % details[i]
+            args = (i, unix2bluetime(os.stat(objpath)[stat.ST_CTIME]),
+                    os.stat(objpath)[stat.ST_SIZE])
+            s += '  <file name="%s" created="%s" size="%s" />' % args
 
     s += "</folder-listing>\n"
 
@@ -42,8 +48,6 @@ class FTPServer(server.BrowserServer):
         path = os.path.abspath(os.path.join(self.directory, name))
 
         if os.path.isdir(path) or type == "x-obex/folder-listing":
-            details = {}
-
             if path.startswith(self.directory):
                 s = gen_folder_listing(path)
                 print(s)
