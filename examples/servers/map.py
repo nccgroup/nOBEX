@@ -30,6 +30,8 @@ class MAPServer(server.MAPServer):
             elif isinstance(header, headers.Type):
                 mimetype = header.decode().strip(b'\x00')
                 print("Type %s" % mimetype)
+            elif isinstance(header, headers.App_Parameters):
+                print("App parameters: %s" % header.data)
 
         path = os.path.abspath(os.path.join(self.cur_directory, name))
         if not path.startswith(self.directory):

@@ -43,7 +43,10 @@ def get_file(c, src_path, dest_path, verbose=True, folder_name=None):
         else:
             print("Fetching %s" % src_path)
 
-    hdrs, card = c.get(src_path, header_list=[headers.Type(b'x-bt/message')])
+    # include attachments, use UTF-8 encoding
+    req_hdrs = [headers.Type(b'x-bt/message'),
+                headers.App_Parameters(b'\x0A\x01\x01\x14\x01\x01')]
+    hdrs, card = c.get(src_path, header_list=req_hdrs)
     with open(dest_path, 'wb') as f:
         f.write(card)
 
