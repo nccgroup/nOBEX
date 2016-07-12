@@ -2,16 +2,12 @@
 
 import bluetooth, os, struct, sys
 from xml.etree import ElementTree
-from xml.dom import minidom
 from PyOBEX import client, headers, responses
 
 def dump_xml(element, file_name):
-    fd = open(file_name, 'w')
-    fd.write('<?xml version="1.0"?>\n<!DOCTYPE vcard-listing SYSTEM "vcard-listing.dtd">\n')
-    rough_string = ElementTree.tostring(element, 'utf-8')
-    reparsed = minidom.parseString(rough_string)
-    pretty_string = reparsed.toprettyxml()
-    fd.write(pretty_string[23:]) # skip xml declaration
+    fd = open(file_name, 'wb')
+    fd.write(b'<?xml version="1.0" encoding="utf-8" standalone="yes" ?>\n')
+    fd.write(ElementTree.tostring(element, 'utf-8'))
     fd.close()
 
 def escape_ampersands(s):
@@ -63,7 +59,6 @@ def dump_dir(c, src_path, dest_path):
 
     # Access the list of vcards in the directory
     hdrs, cards = c.get(src_path, header_list=[headers.Type(b'x-bt/MAP-msg-listing')])
-    print(cards) #debug
 
     # Parse the XML response to the previous request.
     # Extract a list of file names in the directory
