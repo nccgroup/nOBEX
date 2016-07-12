@@ -124,11 +124,26 @@ class Message:
     def reset_headers(self):
         self.header_data = []
 
-    def encode(self):
-        length = self.minimum_length + sum(map(lambda h: len(h.data), self.header_data))
-        args = (Message.format + self.format, self.code, length) + self.data
-        return struct.pack(*args) + b"".join(map(lambda h: h.data, self.header_data))
+    def encode(self, csize=65500):
+        # message format is >BH then data
+        # let's first encode the data, then chunk it up
+        data_body = struct.pack(self.format, *self.data) + \
+                b''.join(map(lambda h: h.data, self.header_data))
 
+        # chunk it up
+        chunks = []
+        ind = 0
+        while len(data_body) - ind > csize:
+            # create continuation chunks
+            chunks.append(struct.pack(Message.format, 0x90, csize) + \
+                    data_body[ind:ind+csize-3]) # leave 3 bytes for header
+            ind += csize - 3
+
+        # final chunk
+        length = 3 + len(data_body) - ind
+        chunks.append(struct.pack(Message.format, self.code, length) + data_body[ind:])
+
+        return b''.join(chunks)
 
 class MessageHandler:
     format = ">BH"
