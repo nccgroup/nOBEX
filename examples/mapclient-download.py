@@ -31,7 +31,8 @@ def connect(device_address):
 
     # Use the generic Client class to connect to the phone.
     c = client.Client(device_address, port)
-    result = c.connect()
+    uuid = b'\xbb\x58\x2b\x40\x42\x0c\x11\xdb\xb0\xde\x08\x00\x20\x0c\x9a\x66'
+    result = c.connect(header_list=[headers.Target(uuid)])
 
     if not isinstance(result, responses.ConnectSuccess):
         sys.stderr.write("Failed to connect to phone.\n")

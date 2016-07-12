@@ -198,7 +198,7 @@ class PBAPServer(Server):
 class MAPServer(Server):
     def start_service(self, port = 4):
         name = "SMS/MMS"
-        uuid = PUBLIC_BROWSE_GROUP
+        uuid = "bb582b40-420c-11db-b0de-0800200c9a66"
         service_classes = [OBEX_MAP_CLASS]
         service_profiles = [OBEX_MAP_PROFILE]
         provider = ""
