@@ -96,13 +96,15 @@ def main():
     dest_dir = os.path.abspath(sys.argv[2]) + "/"
 
     c = connect(device_address)
+    c.setpath("telecom")
+    c.setpath("msg")
 
     # dump every folder
-    dump_dir(c, "telecom/msg/deleted", dest_dir + "telecom/msg/deleted")
-    dump_dir(c, "telecom/msg/draft",   dest_dir + "telecom/msg/draft")
-    dump_dir(c, "telecom/msg/inbox",   dest_dir + "telecom/msg/inbox")
-    dump_dir(c, "telecom/msg/outbox",  dest_dir + "telecom/msg/outbox")
-    dump_dir(c, "telecom/msg/sent",    dest_dir + "telecom/msg/sent")
+    dump_dir(c, "deleted", dest_dir + "telecom/msg/deleted")
+    dump_dir(c, "draft",   dest_dir + "telecom/msg/draft")
+    dump_dir(c, "inbox",   dest_dir + "telecom/msg/inbox")
+    dump_dir(c, "outbox",  dest_dir + "telecom/msg/outbox")
+    dump_dir(c, "sent",    dest_dir + "telecom/msg/sent")
 
     c.disconnect()
     return 0
