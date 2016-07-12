@@ -124,26 +124,36 @@ class Message:
     def reset_headers(self):
         self.header_data = []
 
-    def encode(self, csize=65500):
+    def encode(self, csize=65535):
         # message format is >BH then data
         # let's first encode the data, then chunk it up
-        data_body = struct.pack(self.format, *self.data) + \
-                b''.join(map(lambda h: h.data, self.header_data))
+        # headers must not be split across packets
+        data_chunks = [struct.pack(self.format, *self.data)]
+        data_chunks.extend(map(lambda h: h.data, self.header_data))
 
-        # chunk it up
-        chunks = []
-        ind = 0
-        while len(data_body) - ind > csize:
-            # create continuation chunks
-            chunks.append(struct.pack(Message.format, 0x90, csize) + \
-                    data_body[ind:ind+csize-3]) # leave 3 bytes for header
-            ind += csize - 3
+        total_data = sum([len(c) for c in data_chunks])
+        bytes_chunked = 0
+        last_chunk = False
 
-        # final chunk
-        length = 3 + len(data_body) - ind
-        chunks.append(struct.pack(Message.format, self.code, length) + data_body[ind:])
+        msg_chunks = []
 
-        return b''.join(chunks)
+        # leave 3 bytes for message headers
+        while (bytes_chunked < total_data) or (len(msg_chunks) == 0):
+            chunk = b''
+            while len(data_chunks) and (len(chunk) + len(data_chunks[0]) < csize - 3):
+                assert(len(data_chunks[0]) < csize - 3)
+                bytes_chunked += len(data_chunks[0])
+                chunk += data_chunks.pop(0)
+                if len(data_chunks) == 0: last_chunk = True
+                if last_chunk: break
+
+            if last_chunk: code = self.code
+            else: code = 0x90 # continue response
+
+            length = len(chunk) + 3
+            msg_chunks.append(struct.pack(Message.format, code, length) + chunk)
+
+        return b''.join(msg_chunks)
 
 class MessageHandler:
     format = ">BH"
