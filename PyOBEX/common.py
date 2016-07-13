@@ -139,9 +139,9 @@ class Message:
 
         # leave 3 bytes for message headers
         while (bytes_chunked < total_data) or (len(msg_chunks) == 0):
+            assert(len(data_chunks[0]) < csize - 3)
             chunk = b''
             while len(data_chunks) and (len(chunk) + len(data_chunks[0]) < csize - 3):
-                assert(len(data_chunks[0]) < csize - 3)
                 bytes_chunked += len(data_chunks[0])
                 chunk += data_chunks.pop(0)
                 if len(data_chunks) == 0: last_chunk = True
