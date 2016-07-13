@@ -51,7 +51,7 @@ class MAPServer(server.MAPServer):
 
         if os.path.isdir(path) and mimetype == b'x-bt/MAP-msg-listing':
             try:
-                listing = open(path + "/mlisting.xml", 'r')
+                listing = open(path + "/mlisting.xml", 'rb')
             except IOError:
                 sys.stderr.write("failed to open listing for %s" % path)
                 self._reject(socket)
@@ -61,7 +61,7 @@ class MAPServer(server.MAPServer):
 
             response = responses.Success()
             response_headers = [headers.Length(len(s))] + \
-                    gen_body_headers(s.encode("utf8"))
+                    gen_body_headers(s)
             self.send_response(socket, response, response_headers)
         elif os.path.isdir(path) and mimetype == b'x-obex/folder-listing':
             s = gen_folder_listing(path)
@@ -71,7 +71,7 @@ class MAPServer(server.MAPServer):
             self.send_response(socket, response, response_headers)
         elif os.path.isfile(path) and mimetype == b'x-bt/message':
             try:
-                fd = open(path, 'r')
+                fd = open(path, 'rb')
             except IOError:
                 sys.stderr.write("failed to open message %s" % path)
                 self._reject(socket)
@@ -81,7 +81,7 @@ class MAPServer(server.MAPServer):
 
             response = responses.Success()
             response_headers = [headers.Length(len(s))] + \
-                    gen_body_headers(s.encode("utf8"))
+                    gen_body_headers(s)
             self.send_response(socket, response, response_headers)
         else:
             self._reject(socket)

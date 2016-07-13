@@ -28,7 +28,7 @@ class PBAPServer(server.PBAPServer):
 
         if os.path.isdir(path) or mimetype == b'x-bt/vcard-listing':
             try:
-                listing = open(path + "/listing.xml", 'r')
+                listing = open(path + "/listing.xml", 'rb')
             except IOError:
                 sys.stderr.write("failed to open listing for %s" % path)
                 self._reject(socket)
@@ -39,11 +39,11 @@ class PBAPServer(server.PBAPServer):
             response = responses.Success()
             response_headers = [headers.Name(name),
                     headers.Length(len(s)),
-                    headers.Body(s.encode("utf8"))]
+                    headers.Body(s)]
             self.send_response(socket, response, response_headers)
         elif os.path.isfile(path):
             try:
-                fd = open(path, 'r')
+                fd = open(path, 'rb')
             except IOError:
                 sys.stderr.write("failed to open vcard %s" % path)
                 self._reject(socket)
@@ -54,7 +54,7 @@ class PBAPServer(server.PBAPServer):
             response = responses.Success()
             response_headers = [headers.Name(name),
                     headers.Length(len(s)),
-                    headers.Body(s.encode("utf8"))]
+                    headers.Body(s)]
             self.send_response(socket, response, response_headers)
         else:
             self._reject(socket)
