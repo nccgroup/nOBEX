@@ -17,7 +17,10 @@ def gen_body_headers(data, csize=65500):
     i = 0
     while i < len(data):
         chunk = data[i:i+csize]
-        hdrs.append(headers.Body(chunk))
+        if len(data) - i > csize:
+            hdrs.append(headers.Body(chunk))
+        else:
+            hdrs.append(headers.End_Of_Body(chunk))
         i += csize
     return hdrs
 
