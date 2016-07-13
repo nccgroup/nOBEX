@@ -114,7 +114,7 @@ class Message:
 
         self.header_data = header_list
 
-    def add_header(self, header, max_length):
+    def add_header(self, header, max_length=0xFFFFFFFF):
         if self.minimum_length + len(header.data) > max_length:
             return False
         else:
@@ -124,7 +124,7 @@ class Message:
     def reset_headers(self):
         self.header_data = []
 
-    def encode(self, csize=65535):
+    def encode(self, csize=65535, multi_part=False):
         # message format is >BH then data
         # let's first encode the data, then chunk it up
         # headers must not be split across packets
@@ -134,6 +134,8 @@ class Message:
         total_data = sum([len(c) for c in data_chunks])
         bytes_chunked = 0
         last_chunk = False
+
+        assert(multi_part or total_data < csize)
 
         msg_chunks = []
 
@@ -153,7 +155,10 @@ class Message:
             length = len(chunk) + 3
             msg_chunks.append(struct.pack(Message.format, code, length) + chunk)
 
-        return b''.join(msg_chunks)
+        if multi_part:
+            return msg_chunks
+        else:
+            return msg_chunks[0]
 
 class MessageHandler:
     format = ">BH"

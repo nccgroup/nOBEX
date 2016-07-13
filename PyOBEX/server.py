@@ -81,17 +81,17 @@ class Server:
             return self.max_packet_length
 
     def send_response(self, socket, response, header_list = []):
-        ### TODO: This needs to be able to split messages that are longer than
-        ### the maximum message length agreed with the other party.
-        while header_list:
-            if response.add_header(header_list[0], self._max_length()):
-                header_list.pop(0)
-            else:
-                socket.sendall(response.encode())
-                response.reset_headers()
-
-        # Always send at least one request.
-        socket.sendall(response.encode())
+        # response encoding will handle making sure we split it
+        # appropriately. we just need to send each chunk
+        for h in header_list:
+            response.add_header(h)
+        chunks = response.encode(self._max_length(), True)
+        while len(chunks) > 1:
+            socket.sendall(chunks.pop(0))
+            gf_request = self.request_handler.decode(socket)
+            if not isinstance(gf_request, requests.Get_Final):
+                raise IOError("didn't receive get final request for continuation")
+        socket.sendall(chunks.pop(0))
 
     def _reject(self, socket):
         self.send_response(socket, responses.Forbidden())
