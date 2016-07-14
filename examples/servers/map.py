@@ -129,7 +129,7 @@ class MAPServer(server.MAPServer):
             print("set message status")
         elif mimetype == b'x-bt/message':
             name = name.strip('\x00').encode(sys.getfilesystemencoding())
-            name = os.path.split(name)[1]
+            name = os.path.split(name)[-1]
             path = os.path.join(self.cur_directory, name)
             path = os.path.join(path, gen_handle())
             path = os.path.abspath(path)
