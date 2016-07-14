@@ -60,40 +60,7 @@ class PBAPServer(server.PBAPServer):
             self._reject(socket)
 
     def put(self, socket, request):
-        name = ""
-        length = 0
-        body = ""
-
-        while True:
-            for header in request.header_data:
-                if isinstance(header, headers.Name):
-                    name = header.decode()
-                    print("Receiving", name)
-                elif isinstance(header, headers.Length):
-                    length = header.decode()
-                    print("Length", length)
-                elif isinstance(header, headers.Body):
-                    body += header.decode()
-                elif isinstance(header, headers.End_Of_Body):
-                    body += header.decode()
-
-            if request.is_final():
-                break
-
-            # Ask for more data.
-            self.send_response(socket, responses.Continue())
-
-            # Get the next part of the data.
-            request = self.request_handler.decode(socket)
-
-        self.send_response(socket, responses.Success())
-
-        name = name.strip('\x00').encode(sys.getfilesystemencoding())
-        name = os.path.split(name)[1]
-        path = os.path.join(self.cur_directory, name)
-        print("Writing", repr(path))
-
-        open(path, "wb").write(body)
+        self.send_response(socket, responses.Bad_Request())
 
     def set_path(self, socket, request):
         if request.flags & requests.Set_Path.NavigateToParent:
