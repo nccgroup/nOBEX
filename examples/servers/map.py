@@ -121,6 +121,8 @@ class MAPServer(server.MAPServer):
             # Get the next part of the data.
             request = self.request_handler.decode(socket)
 
+        resp_headers = []
+
         if mimetype == b'x-bt/MAP-event-report':
             print("MAP event", body)
         elif mimetype == b'x-bt/MAP-NotificationRegistration':
@@ -128,7 +130,7 @@ class MAPServer(server.MAPServer):
         elif mimetype == b'x-bt/messageStatus':
             print("set message status")
         elif mimetype == b'x-bt/message':
-            name = name.strip('\x00').encode(sys.getfilesystemencoding())
+            name = name.strip('\x00')
             name = os.path.split(name)[-1]
             path = os.path.join(self.cur_directory, name)
             path = os.path.join(path, gen_handle())
