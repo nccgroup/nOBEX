@@ -30,7 +30,7 @@ def main():
         sys.stderr.write("Usage: %s <directory> [hfp]\n" % sys.argv[0])
         sys.exit(1)
 
-    en_hhp = False
+    en_hfp = False
     device_address = ""
     directory = sys.argv[1]
     if len(sys.argv) > 2 and sys.argv[2] == "hfp":
