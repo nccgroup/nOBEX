@@ -1,0 +1,25 @@
+AT+BRSF=111	+BRSF: 871
+AT+CIND=?	+CIND: (\"call\",(0,1)),(\"callsetup\",(0-3)),(\"service\",(0-1)),(\"signal\",(0-5)),(\"roam\",(0,1)),(\"battchg\",(0-5)),(\"callheld\",(0-2))
+AT+CIND?	+CIND: 0,0,1,5,0,5,0
+AT+CMER=3,0,0,1	OK
+AT+CHLD=?	+CHLD: (0,1,2,3)
+AT+CLCC	OK
+AT+CLIP=1	OK
+AT+CCWA=1	OK
+AT+NREC=0	OK
+AT+CPBS=?	+CPBS: ("ME","SM","DC","RC","MC")
+AT+CSCS=?	+CSCS: ("UTF-8","IRA","GSM")
+AT+CSCS="UTF-8"	OK
+AT+CSMS=?	+CSMS: 0,1,1,1
+AT+CMGF=?	+CMGF: (0-1)
+AT+CPMS=?	+CPMS: ("ME","MT","SM","SR"),("ME","MT","SM","SR"),("ME","MT","SM","SR")
+AT+CMGL=?	+CMGL: 1,"REC READ","+85291234567",,"07/05/01,08:00:15+32",145,37
+AT+CMGR=?	+CMGR: "REC READ","+85291234567",,"07/02/18,00:12:05+32"
+AT+CMGS=?	ERROR
+AT+CPBS="MC"	OK
+AT+CPBS="ME"	OK
+AT+CPBS?	+CPBS: "ME"
+AT+CMGD=?	ERROR
+AT+CPBR=?	+CPBR: (1-1000),40,24
+AT+CPBR=1,10	+CPBR: 1,"18005555555",129,"Contact Name"
+AT+CNMI=?	+CNMI: (0-2),(0-3),(0,2,3),(0-2),(0,1)

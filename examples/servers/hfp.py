@@ -1,6 +1,34 @@
 import bluetooth, socket, time
 from PyOBEX import server, common
 
+default_beast_table = {
+    b'AT+CSMS=?': b'+CSMS: 0,1,1,1',
+    b'AT+CSCS=?': b'+CSCS: ("UTF-8","IRA","GSM")',
+    b'AT+CPMS=?': b'+CPMS: ("ME","MT","SM","SR"),("ME","MT","SM","SR"),("ME","MT","SM","SR")',
+    b'AT+CSCS="UTF-8"': None,
+    b'AT+CPBS=?': b'+CPBS: ("ME","SM","DC","RC","MC")',
+    b'AT+NREC=0': None,
+    b'AT+CMGF=?': b'+CMGF: (0-1)',
+    b'AT+CPBS="MC"': None,
+    b'AT+CMGS=?': b'ERROR',
+    b'AT+CMGR=?': b'+CMGR: "REC READ","+85291234567",,"07/02/18,00:12:05+32"',
+    b'AT+CHLD=?': b'+CHLD: (0,1,2,3)',
+    b'AT+CMGD=?': b'ERROR',
+    b'AT+CLIP=1': None,
+    b'AT+CPBR=?': b'+CPBR: (1-1000),40,24',
+    b'AT+CMGL=?': b'+CMGL: 1,"REC READ","+85291234567",,"07/05/01,08:00:15+32",145,37',
+    b'AT+CMER=3,0,0,1': None,
+    b'AT+CIND?': b'+CIND: 0,0,1,5,0,5,0',
+    b'AT+CIND=?': b'+CIND: (\\"call\\",(0,1)),(\\"callsetup\\",(0-3)),(\\"service\\",(0-1)),(\\"signal\\",(0-5)),(\\"roam\\",(0,1)),(\\"battchg\\",(0-5)),(\\"callheld\\",(0-2))',
+    b'AT+CPBS?': b'+CPBS: "ME"',
+    b'AT+CPBR=1,10': b'+CPBR: 1,"18005555555",129,"Contact Name"',
+    b'AT+CCWA=1': None,
+    b'AT+CPBS="ME"': None,
+    b'AT+BRSF=111': b'+BRSF: 871',
+    b'AT+CLCC': None,
+    b'AT+CNMI=?': b'+CNMI: (0-2),(0-3),(0,2,3),(0-2),(0,1)'
+}
+
 class HFPMessageHandler(object):
     def decode(self, sock):
         msg = bytearray()
@@ -13,9 +41,20 @@ class HFPMessageHandler(object):
         return bytes(msg)
 
 class HFPServer(server.Server):
-    def __init__(self, *args, **kwargs):
-        super(HFPServer, self).__init__(*args, **kwargs)
+    def __init__(self, beast_file=None):
+        """beast_file is a bbeast format AT command response table file"""
+        super(HFPServer, self).__init__()
         self.request_handler = HFPMessageHandler()
+        self.resp_dict = default_beast_table
+        if beast_file: self._load_beast(beast_file)
+
+    def _load_beast(self, beast_file):
+        lines = open(beast_file, 'rb').readlines()
+        for l in lines:
+            cmd, resp = l.strip().split(b'\t')
+            if resp == b'OK': resp = None
+            self.resp_dict[cmd] = resp
+        print(self.resp_dict)
 
     def serve(self, socket):
         """
@@ -60,12 +99,18 @@ class HFPServer(server.Server):
 
     def process_request(self, sock, cmd):
         print("received AT cmd: %s" % cmd)
-        if cmd.startswith(b'AT+BRSF'):
-            self._reply(sock, b'\r\n+BRSF: 871\r\n')
-        self._reply(sock, b'\r\nOK\r\n')
+        cmd = cmd.strip()
+        if cmd in self.resp_dict:
+            print("known command, resp: %s" % repr(self.resp_dict[cmd]))
+            self._reply(sock, self.resp_dict[cmd])
+        else:
+            print("new command, no response (just OK)")
+            self._reply(sock, None)
 
     def _reply(self, sock, resp):
         try:
-            sock.sendall(resp)
+            if resp is not None:
+                sock.sendall(b'\r\n' + resp + b'\r\n')
+            sock.sendall('\r\nOK\r\n')
         except:
             print("failure writing AT cmd response")
