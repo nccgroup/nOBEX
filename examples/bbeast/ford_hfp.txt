@@ -1,0 +1,20 @@
+AT+BRSF=39	+BRSF: 871
+AT+CIND=?	+CIND: (\"call\",(0,1)),(\"callsetup\",(0-3)),(\"service\",(0-1)),(\"signal\",(0-5)),(\"roam\",(0,1)),(\"battchg\",(0-5)),(\"callheld\",(0-2))
+AT+CIND?	+CIND: 0,0,1,5,0,5,0
+AT+CMER=3,0,0,1	OK
+AT+CHLD=?	+CHLD: (0,1,2,3)
+AT+COPS=3,2	OK
+AT+COPS?	+COPS: 0,0,"WIND AWAY"
+AP+COPS=3,0	OK
+AT+CLCC	OK
+AT+CNUM	OK
+AT+CLIP=1	OK
+AT+CCWA=1	OK
+AT+NREC=0	OK
+AT+CPMS=?	ERROR
+AT+CMGE=?	ERROR
+AT+CSCS=?	+CSCS: ("UTF-8","IRA","GSM")
+AT+CSCS="UTF-8"	OK
+AT+CPBS=?	+CPBS: ("ME","SM","DC","RC","MC")
+AT+CPMS="SM"	OK
+AT+CPBR=?	+CPBR: (1-1),30,30
