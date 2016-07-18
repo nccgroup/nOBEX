@@ -24,6 +24,7 @@ default_beast_table = {
     b'AT+CPBR=1,10': b'+CPBR: 1,"18005555555",129,"Contact Name"',
     b'AT+CCWA=1': None,
     b'AT+CPBS="ME"': None,
+    b'AT+BRSF=39': b'+BRSF: 871',
     b'AT+BRSF=111': b'+BRSF: 871',
     b'AT+CLCC': None,
     b'AT+CNMI=?': b'+CNMI: (0-2),(0-3),(0,2,3),(0-2),(0,1)'
@@ -77,7 +78,7 @@ class HFPServer(server.Server):
 
             print("HFP connecting to %s on port %i" % (address[0], port))
             connection = common.Socket()
-            time.sleep(0.5)
+            time.sleep(1)
             connection.connect((address[0], port))
 
             self.connected = True
@@ -111,6 +112,6 @@ class HFPServer(server.Server):
         try:
             if resp is not None:
                 sock.sendall(b'\r\n' + resp + b'\r\n')
-            sock.sendall('\r\nOK\r\n')
+            sock.sendall(b'\r\nOK\r\n')
         except:
             print("failure writing AT cmd response")
