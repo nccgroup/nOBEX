@@ -12,9 +12,9 @@ class HFPMessageHandler(object):
                 break
         return bytes(msg)
 
-class HFPDummyServer(server.Server):
+class HFPServer(server.Server):
     def __init__(self, *args, **kwargs):
-        super(HFPDummyServer, self).__init__(*args, **kwargs)
+        super(HFPServer, self).__init__(*args, **kwargs)
         self.request_handler = HFPMessageHandler()
 
     def serve(self, socket):

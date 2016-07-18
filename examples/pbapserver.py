@@ -12,9 +12,9 @@ def run_server(device_address, directory, en_hfp=False):
     server1 = pbap.PBAPServer(device_address, directory)
     socket = server1.start_service()
 
-    # launch the dummy Hands Free Profile Server
+    # launch the Hands Free Profile Server
     if en_hfp:
-        server2 = hfp.HFPDummyServer(device_address)
+        server2 = hfp.HFPServer(device_address)
         socket2 = server2.start_service()
         st = Thread(target=server2.serve, args=(socket2,))
         st.start()

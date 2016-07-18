@@ -7,7 +7,7 @@ def run_server(device_address):
     # to be raised, the server instance will be deleted properly, giving us a
     # chance to create a new one and start the service again without getting
     # errors about the address still being in use.
-    server = hfp.HFPDummyServer(device_address)
+    server = hfp.HFPServer(device_address)
     socket = server.start_service()
 
     try:
