@@ -1,6 +1,20 @@
 import os, socket, sys
 from PyOBEX import headers, requests, responses, server
 
+def gen_body_headers(data, csize=65500):
+    """Generate a list of body headers (to encapsulate large data)"""
+    hdrs = []
+    i = 0
+    while i < len(data):
+        chunk = data[i:i+csize]
+        if len(data) - i > csize:
+            hdrs.append(headers.Body(chunk))
+        else:
+            hdrs.append(headers.End_Of_Body(chunk))
+        i += csize
+    return hdrs
+
+
 class PBAPServer(server.PBAPServer):
     def __init__(self, address, directory):
         super(PBAPServer, self).__init__(address)
@@ -37,9 +51,8 @@ class PBAPServer(server.PBAPServer):
             listing.close()
 
             response = responses.Success()
-            response_headers = [headers.Name(name),
-                    headers.Length(len(s)),
-                    headers.Body(s)]
+            response_headers = [headers.Name(name), headers.Length(len(s))] + \
+                    gen_body_headers(s)
             self.send_response(socket, response, response_headers)
         elif os.path.isfile(path):
             try:
@@ -52,9 +65,8 @@ class PBAPServer(server.PBAPServer):
             fd.close()
 
             response = responses.Success()
-            response_headers = [headers.Name(name),
-                    headers.Length(len(s)),
-                    headers.Body(s)]
+            response_headers = [headers.Name(name), headers.Length(len(s))] + \
+                    gen_body_headers(s)
             self.send_response(socket, response, response_headers)
         else:
             self._reject(socket)
