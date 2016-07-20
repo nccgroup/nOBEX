@@ -52,7 +52,7 @@ class PBAPServer(server.PBAPServer):
 
             response = responses.Success()
             response_headers = [headers.Name(name), headers.Length(len(s))] + \
-                    gen_body_headers(s)
+                    gen_body_headers(s, self._max_length() - 50)
             self.send_response(socket, response, response_headers)
         elif os.path.isfile(path):
             try:
@@ -66,7 +66,7 @@ class PBAPServer(server.PBAPServer):
 
             response = responses.Success()
             response_headers = [headers.Name(name), headers.Length(len(s))] + \
-                    gen_body_headers(s)
+                    gen_body_headers(s, self._max_length() - 50)
             self.send_response(socket, response, response_headers)
         else:
             self._reject(socket)

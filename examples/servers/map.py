@@ -64,13 +64,13 @@ class MAPServer(server.MAPServer):
 
             response = responses.Success()
             response_headers = [headers.Length(len(s))] + \
-                    gen_body_headers(s)
+                    gen_body_headers(s, self._max_length() - 50)
             self.send_response(socket, response, response_headers)
         elif os.path.isdir(path) and mimetype == b'x-obex/folder-listing':
             s = gen_folder_listing(path)
             response = responses.Success()
             response_headers = [headers.Length(len(s))] + \
-                    gen_body_headers(s.encode("utf8"))
+                    gen_body_headers(s.encode("utf8"), self._max_length())
             self.send_response(socket, response, response_headers)
         elif os.path.isfile(path) and mimetype == b'x-bt/message':
             try:
@@ -84,7 +84,7 @@ class MAPServer(server.MAPServer):
 
             response = responses.Success()
             response_headers = [headers.Length(len(s))] + \
-                    gen_body_headers(s)
+                    gen_body_headers(s, self._max_length() - 50)
             self.send_response(socket, response, response_headers)
         else:
             self._reject(socket)
