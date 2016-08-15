@@ -34,10 +34,12 @@ def serve_map(folder):
         except:
             server.stop_service(socket)
 
+def usage(argv):
+    sys.stderr.write("Usage: %s [--hfp [config]] [--pbap pbap_root] [--map map_root]\n" % argv[0])
 
 def main(argv):
-    if ("-h" in argv) or ("--help" in argv):
-        sys.stderr.write("Usage: %s [--hfp [config]] [--pbap pbap_root] [--map map_root]\n" % argv[0])
+    if ("-h" in argv) or ("--help" in argv) or (len(argv) == 1):
+        usage(argv)
         return -1
 
     en_hfp = False
@@ -62,6 +64,7 @@ def main(argv):
             pbap_conf = args.pop(0)
         else:
             sys.stderr.write("unknown parameter %s\n" % a)
+            usage(argv)
             return -1
 
     t = None
