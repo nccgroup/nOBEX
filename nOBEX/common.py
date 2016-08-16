@@ -5,7 +5,7 @@ common.py - Classes providing common facilities for other modules.
 
 Copyright (C) 2007 David Boddie <david@boddie.org.uk>
 
-This file is part of the PyOBEX Python package.
+This file is part of the nOBEX Python package.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ else:
             return BluetoothSocket(RFCOMM)
 
 import struct
-from PyOBEX import headers
+from nOBEX import headers
 
 class OBEX_Version:
     major = 1

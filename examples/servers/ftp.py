@@ -1,5 +1,5 @@
 import bluetooth, os, stat, sys
-from PyOBEX import headers, requests, responses, server
+from nOBEX import headers, requests, responses, server
 from datetime import datetime
 
 def unix2bluetime(unix_time):

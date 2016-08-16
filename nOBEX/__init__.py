@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 """
-__init__.py - Package file for the PyOBEX Python package.
+__init__.py - Package file for the nOBEX Python package.
 
 Copyright (C) 2007 David Boddie <david@boddie.org.uk>
 
-This file is part of the PyOBEX Python package.
+This file is part of the nOBEX Python package.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -22,4 +22,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 __all__ = ["client", "common", "headers", "requests", "responses", "server"]
-__version__ = "0.27"
+__version__ = "1.0.0"

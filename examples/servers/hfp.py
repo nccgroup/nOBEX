@@ -1,5 +1,5 @@
 import bluetooth, socket, time
-from PyOBEX import server, common
+from nOBEX import server, common
 
 default_beast_table = {
     b'AT+CLCC': None,

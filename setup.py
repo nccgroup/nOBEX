@@ -2,14 +2,14 @@
 
 from distutils.core import setup
 
-from PyOBEX import __version__
+from nOBEX import __version__
 
 setup(
-    name         = "PyOBEX",
+    name         = "nOBEX",
     description  = "A package implementing aspects of the Object Exchange (OBEX) protocol.",
-    author       = "David Boddie",
-    author_email = "david@boddie.org.uk",
-    url          = "http://www.boddie.org.uk/david/Projects/Python/PyOBEX/",
+    author       = "David Boddie an Sultan Khan",
+    author_email = "Sultan.QasimKhan@nccgroup.trust",
+    url          = "https://github.com/nccgroup/nOBEX",
     version      = __version__,
-    packages     = ["PyOBEX"]
+    packages     = ["nOBEX"]
     )

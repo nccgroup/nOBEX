@@ -1,5 +1,5 @@
 import os, socket, sys
-from PyOBEX import headers, requests, responses, server
+from nOBEX import headers, requests, responses, server
 from .ftp import gen_folder_listing
 
 def gen_handle():

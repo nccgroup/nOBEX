@@ -3,7 +3,7 @@
 import bluetooth, os, struct, sys
 from xml.etree import ElementTree
 from xml.dom import minidom
-from PyOBEX import client, headers, responses
+from nOBEX import client, headers, responses
 
 def usage():
     sys.stderr.write("Usage: %s <device address> <dest directory> [SIM]\n" % sys.argv[0])

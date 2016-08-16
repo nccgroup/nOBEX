@@ -6,8 +6,8 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtXml import *
 
-from PyOBEX.client import BrowserClient
-from PyOBEX.responses import *
+from nOBEX.client import BrowserClient
+from nOBEX.responses import *
 
 class OBEXError(Exception):
 

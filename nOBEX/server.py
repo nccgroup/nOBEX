@@ -5,7 +5,7 @@ server.py - Server classes for handling OBEX requests and sending responses.
 
 Copyright (C) 2007 David Boddie <david@boddie.org.uk>
 
-This file is part of the PyOBEX Python package.
+This file is part of the nOBEX Python package.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,10 +26,10 @@ from bluetooth import BluetoothSocket, RFCOMM, OBEX_FILETRANS_CLASS, \
         OBEX_UUID, PUBLIC_BROWSE_GROUP, RFCOMM_UUID, advertise_service, \
         stop_advertising
 
-from PyOBEX.common import OBEX_Version
-from PyOBEX import headers
-from PyOBEX import requests
-from PyOBEX import responses
+from nOBEX.common import OBEX_Version
+from nOBEX import headers
+from nOBEX import requests
+from nOBEX import responses
 
 OBEX_PBAP_CLASS = "112F"
 OBEX_PBAP_PROFILE = ("1130", 0x0101)

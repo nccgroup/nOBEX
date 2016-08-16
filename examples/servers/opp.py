@@ -1,5 +1,5 @@
 import os
-from PyOBEX import headers, responses, server
+from nOBEX import headers, responses, server
 
 class OPPServer(server.PushServer):
     """OBEX Object Push Profile Server"""

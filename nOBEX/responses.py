@@ -5,7 +5,7 @@ reponses.py - Classes encapsulating OBEX responses.
 
 Copyright (C) 2007 David Boddie <david@boddie.org.uk>
 
-This file is part of the PyOBEX Python package.
+This file is part of the nOBEX Python package.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import struct
-from PyOBEX.common import OBEX_Version, Message, MessageHandler
+from nOBEX.common import OBEX_Version, Message, MessageHandler
 
 class Response(Message):
     # Define the additional format information required by responses.

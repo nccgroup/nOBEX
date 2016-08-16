@@ -5,7 +5,7 @@ client.py - Client classes for sending OBEX requests and handling responses.
 
 Copyright (C) 2007 David Boddie <david@boddie.org.uk>
 
-This file is part of the PyOBEX Python package.
+This file is part of the nOBEX Python package.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,10 +21,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from PyOBEX.common import OBEX_Version, Socket
-from PyOBEX import headers
-from PyOBEX import requests
-from PyOBEX import responses
+from nOBEX.common import OBEX_Version, Socket
+from nOBEX import headers
+from nOBEX import requests
+from nOBEX import responses
 
 
 class Client:

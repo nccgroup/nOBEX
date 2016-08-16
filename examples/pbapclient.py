@@ -2,7 +2,7 @@
 
 import bluetooth, os, struct, sys
 from xml.etree import ElementTree
-from PyOBEX import client, headers, responses
+from nOBEX import client, headers, responses
 
 if __name__ == "__main__":
 

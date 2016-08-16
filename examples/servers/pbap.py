@@ -1,5 +1,5 @@
 import os, socket, sys
-from PyOBEX import headers, requests, responses, server
+from nOBEX import headers, requests, responses, server
 
 def gen_body_headers(data, csize=65500):
     """Generate a list of body headers (to encapsulate large data)"""

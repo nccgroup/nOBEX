@@ -5,7 +5,7 @@
 # is no way to terminate the operation from within the thread itself.
 
 import bluetooth, sys, threading
-from PyOBEX import client, responses
+from nOBEX import client, responses
 
 class CallerException(Exception):
 
