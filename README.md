@@ -77,7 +77,6 @@ Get nOBEX and install it:
 ```
  git clone https://github.com/nccgroup/nOBEX.git
  cd nOBEX
- git checkout python3
  sudo python3 setup.py install
 ```
 
@@ -111,7 +110,7 @@ python3 examples/mapclient-download.py 5C:51:88:8A:EC:5B ~/map_root/
 Alternatively, if your phone doesn't support MAP properly, get the MAP sample data tree:
 ```
  cd ~
- git clone https://github.com/nccgroup/map_root.git
+ git clone https://github.com/nccgroup/obex_map_root.git
 ```
 
 Modify the sample data as desired. Then run the server, indicating where it should look for the
