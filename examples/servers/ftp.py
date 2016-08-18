@@ -22,6 +22,9 @@ def gen_folder_listing(path):
 
     s += "</folder-listing>\n"
 
+    if sys.version_info.major < 3:
+        s = unicode(s)
+
     return s
 
 class FTPServer(server.BrowserServer):

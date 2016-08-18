@@ -36,7 +36,7 @@ OBEX_PBAP_PROFILE = ("1130", 0x0101)
 OBEX_MAP_CLASS = "1132"
 OBEX_MAP_PROFILE = ("1134", 0x0102)
 
-class Server:
+class Server(object):
     def __init__(self, address = ""):
         self.address = address
         self.max_packet_length = 0xffff

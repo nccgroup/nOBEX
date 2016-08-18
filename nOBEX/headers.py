@@ -32,7 +32,10 @@ class Header:
 
 class UnicodeHeader(Header):
     def decode(self):
-        return str(self.data, encoding = "utf_16_be")
+        if sys.version_info.major < 3:
+            return unicode(self.data, encoding = "utf_16_be")
+        else:
+            return str(self.data, encoding = "utf_16_be")
 
     def encode(self, data):
         encoded_data = data.encode("utf_16_be") + b"\x00\x00"
