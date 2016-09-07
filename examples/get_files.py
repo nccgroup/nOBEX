@@ -1,5 +1,15 @@
 #!/usr/bin/env python
 
+#
+# Released as open source by NCC Group Plc - http://www.nccgroup.com/
+#
+# Developed by Sultan Qasim Khan, Sultan.QasimKhan@nccgroup.trust
+#
+# http://www.github.com/nccgroup/nOBEX
+#
+# Released under GPLv3, a full copy of which can be found in COPYING.
+#
+
 import bluetooth, os, sys
 from xml.etree import ElementTree
 from nOBEX import client, responses
