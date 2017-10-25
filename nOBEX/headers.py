@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import struct
+import sys
 
 class Header:
     def __init__(self, data, encoded = False):
