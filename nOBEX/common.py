@@ -176,8 +176,11 @@ class MessageHandler:
         def _read_packet(self, socket_):
             data = socket_.recv(3, socket.MSG_WAITALL)
             type, length = struct.unpack(self.format, data)
-            if length > 3:
-                data += socket_.recv(length - 3, socket.MSG_WAITALL)
+            body_len = length - 3
+            while body_len > 0:
+                read_len = 32767 if body_len > 32767 else body_len
+                data += socket_.recv(read_len, socket.MSG_WAITALL)
+                body_len -= read_len
             return type, length, data
 
     def decode(self, socket):
