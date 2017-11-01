@@ -10,42 +10,45 @@
 # Released under GPLv3, a full copy of which can be found in COPYING.
 #
 
-import bluetooth, os, sys
+import bluetooth, os, signal, sys, traceback
 from servers import hfp, pbap
 from servers import map as map_
 from threading import Thread
 
 def serve_hfp(beast_file=None):
+    server = hfp.HFPServer(beast_file)
+    socket = server.start_service()
     while True:
-        server = hfp.HFPServer(beast_file)
-        socket = server.start_service()
         try:
             server.serve(socket)
         except:
-            server.stop_service(socket)
+            traceback.print_exc()
 
 
 def serve_pbap(folder):
+    server = pbap.PBAPServer("", folder)
+    socket = server.start_service()
     while True:
-        server = pbap.PBAPServer("", folder)
-        socket = server.start_service()
         try:
             server.serve(socket)
         except:
-            server.stop_service(socket)
+            traceback.print_exc()
 
 
 def serve_map(folder):
+    server = map_.MAPServer("", folder)
+    socket = server.start_service()
     while True:
-        server = map_.MAPServer("", folder)
-        socket = server.start_service()
         try:
             server.serve(socket)
         except:
-            server.stop_service(socket)
+            traceback.print_exc()
 
 def usage(argv):
     sys.stderr.write("Usage: %s [--hfp [config]] [--pbap pbap_root] [--map map_root]\n" % argv[0])
+
+def signal_handler(signal, frame):
+    sys.exit(0)
 
 def main(argv):
     if ("-h" in argv) or ("--help" in argv) or (len(argv) == 1):
@@ -77,25 +80,19 @@ def main(argv):
             usage(argv)
             return -1
 
-    t = None
+    signal.signal(signal.SIGINT, signal_handler)
 
     if en_hfp:
         hfp_thread = Thread(target=serve_hfp, args=(hfp_conf,))
         hfp_thread.start()
-        t = hfp_thread
 
     if en_map:
         map_thread = Thread(target=serve_map, args=(map_conf,))
         map_thread.start()
-        t = map_thread
 
     if en_pbap:
         pbap_thread = Thread(target=serve_pbap, args=(pbap_conf,))
         pbap_thread.start()
-        t = pbap_thread
-
-    if t is not None:
-        t.join()
 
     return 0
 
