@@ -9,7 +9,7 @@
 # Released under GPLv3, a full copy of which can be found in COPYING.
 #
 
-import bluetooth, socket, time
+import bluetooth, re, socket, time
 from nOBEX import server, common
 
 default_beast_table = {
@@ -17,14 +17,11 @@ default_beast_table = {
     b'AT+CHLD=?': b'+CHLD: (0,1,2,3)',
     b'AT+CNMI=?': b'+CNMI: (0-2),(0-3),(0,2,3),(0-2),(0,1)',
     b'AT+CPBR=?': b'+CPBR: (1-1),30,30',
-    b'AT+CPBS="ME"': None,
-    b'AT+CSCS=?': b'+CSCS: ("UTF-8","IRA","GSM")',
-    b'AT+CPBS="MC"': None,
+    b'AT+CSCS=?': b'+CSCS: ("UTF-8","IRA","GSM","8859-1")',
     b'AT+COPS?': b'+COPS: 0,0,"WIND AWAY"',
     b'AT+CMGE=?': b'ERROR',
     b'AT+CIND?': b'+CIND: 0,0,1,3,1,4,0',
     b'AT+CMER=3,0,0,1': None,
-    b'AT+CSCS="UTF-8"': None,
     b'AT+CIND=?': b'+CIND: ("call",(0,1)),("callsetup",(0-3)),("service",(0-1)),("signal",(0-5)),("roam",(0,1)),("battchg",(0-5)),("callheld",(0-2))',
     b'AT+CLIP=1': None,
     b'AT+CSMS=?': b'+CSMS: 0,1,1,1',
@@ -32,19 +29,31 @@ default_beast_table = {
     b'AT+CPMS="SM"': None,
     b'AT+CMGS=?': b'ERROR',
     b'AT+CMGD=?': b'ERROR',
-    b'AP+COPS=3,0': None,
     b'AT+CMGR=?': b'+CMGR: "REC READ","+85291234567",,"07/02/18,00:12:05+32"',
-    b'AT+COPS=3,2': None,
     b'AT+CPMS=?': b'ERROR',
     b'AT+CCWA=1': None,
     b'AT+NREC=0': None,
     b'AT+CPBS=?': b'+CPBS: ("ME","SM","DC","RC","MC")',
     b'AT+CPBR=1,10': b'+CPBR: 1,"18005555555",129,"Contact Name"',
-    b'AT+BRSF=39': b'+BRSF: 871',
     b'AT+CMGL=?': b'+CMGL: 1,"REC READ","+85291234567",,"07/05/01,08:00:15+32",145,37',
     b'AT+CMGF=?': b'+CMGF: (0-1)',
-    b'AT+BRSF=111': b'+BRSF: 871',
-    b'AT+CNUM': None
+    b'AT+CNUM': None,
+    b'AT+CMEE=1': None,
+    b'AT+CSCS?': b'+CSCS: "8859-1"',
+    b'AT+CGMI': b'+CGMI: NCC Group',
+    b'AT+CGMM': b'+CGMM: nOBEX',
+    b'AT+CGMR': b'+CGMR: 0'
+}
+
+# for commands that could end with multiple values, but same response applies
+regex_beast_table = {
+    b'AT\+CPBS=".*"': None,
+    b'AT\+COPS=[0-9].*': None,
+    b'AT\+BRSF=[0-9]+': b'+BRSF: 871',
+    b'AT\+CSCS=".*"': None,
+    b'AT\+VGS=[0-9]+': None,
+    b'AT\+VGM=[0-9]+': None,
+    b'AT\+BAC=[0-9].*': None
 }
 
 class HFPMessageHandler(object):
@@ -122,8 +131,16 @@ class HFPServer(server.Server):
             print("known command, resp: %s" % repr(self.resp_dict[cmd]))
             self._reply(sock, self.resp_dict[cmd])
         else:
-            print("new command, no response (just OK)")
-            self._reply(sock, None)
+            match_found = False
+            for rx in regex_beast_table:
+                if re.match(rx, cmd):
+                    print("known regex command, resp %s" % repr(regex_beast_table[rx]))
+                    self._reply(sock, regex_beast_table[rx])
+                    match_found = True
+                    break
+            if not match_found:
+                print("new command, no response (just OK)")
+                self._reply(sock, None)
 
     def _reply(self, sock, resp):
         try:
