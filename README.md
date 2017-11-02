@@ -155,6 +155,6 @@ engine and instrumenting the target device.
 
 Beyond fuzzing MAP and PBAP on automotive head units, nOBEX can also be used for normal positive
 testing of PBAP, MAP, and other OBEX profiles (such as FTP) for both client and server roles. The
-PBAP and MAP servers were tested with the [http://intradarma.com/ OBEX Commander] app for Android,
+PBAP and MAP servers were tested with the [OBEX Commander](http://intradarma.com/) app for Android,
 in which many crashes could be triggered by faulty OBEX communication and malformed profile specific
 data. Furthermore, the HFP support can be used to manually fuzz AT commands.
