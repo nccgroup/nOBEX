@@ -111,11 +111,8 @@ Pull the message data off your phone to establish a test MAP tree:
 python3 examples/mapclient-download.py 5C:51:88:8A:EC:5B ~/map_root/
 ```
 
-Alternatively, if your phone doesn't support MAP properly, get the MAP sample data tree:
-```
- cd ~
- git clone https://github.com/nccgroup/obex_map_root.git
-```
+Alternatively, if your phone doesn't support MAP properly, use the MAP sample data tree
+located in the `examples/map_root` folder.
 
 Modify the sample data as desired. Then run the server, indicating where it should look for the
 root of the MAP tree.

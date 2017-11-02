@@ -1,0 +1,37 @@
+BEGIN:BMSG
+      VERSION:1.0
+      STATUS:UNREAD
+      TYPE:EMAIL
+      FOLDER:TELECOM/MSG/INBOX
+      BEGIN:VCARD
+            VERSION:2.1
+            N:Mat
+            EMAIL:ma@abc.edu
+      END:VCARD
+      BEGIN:BENV
+            BEGIN:VCARD
+                  VERSION:2.1
+N:Tanaka
+                  EMAIL:tanaka@def.edu
+            END:VCARD
+            BEGIN:BENV
+                  BEGIN:VCARD
+                        VERSION:2.1
+                        N:Laurent
+                        EMAIL:laurent@ghi.edu
+                  END:VCARD
+                  BEGIN:BBODY
+                        ENCODING:8BIT
+                        LENGTH:125
+                        BEGIN:MSG
+                              Date: 20 Jun 96
+                              Subject: Fish
+                              From: tanaka@def.edu
+                              To: laurent@ghi.edu
+                              Let's go fishing!
+                              BR, Mat
+                        END:MSG
+                  END:BBODY
+            END:BENV
+      END:BENV
+END:BMSG

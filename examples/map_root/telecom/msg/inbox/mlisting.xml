@@ -1,0 +1,4 @@
+<MAP-msg-listing version = "1.0">
+    <msg handle = "456789" subject = "Ohayougozaimasu" datetime = "20071215T134326" sender_name = "Joachim" sender_addressing = "00498912345678" recipient_addressing = "+49-89-01234567" type = "SMS_GSM" size = "256" attachment_size = "0" priority = "no" read = "yes" sent = "no" protected = "no"/>
+    <msg handle = "0123" subject = "Fish" datetime = "19960620T171204" sender_name = "Tanaka" sender_addressing = "tanaka@def.edu" recipient_addressing = "laurent@ghi.edu" type = "EMAIL" size = "1059" attachment_size = "0" priority = "yes" read = "yes" sent = "no" protected = "yes"/>
+</MAP-msg-listing>

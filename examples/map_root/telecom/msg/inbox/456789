@@ -1,0 +1,21 @@
+BEGIN:BMSG
+      VERSION:1.0
+      STATUS:UNREAD
+      TYPE:SMS_GSM
+      FOLDER:TELECOM/MSG/INBOX
+      BEGIN:VCARD
+            VERSION:2.1
+            N:Joachim
+            TEL:00498912345678
+      END:VCARD
+      BEGIN:BENV
+            BEGIN:BBODY
+                  ENCODING:G-7BIT
+                  LENGTH: 96
+                  BEGIN:MSG
+                        0191000E9100949821436587000011303231
+                        12928211CC32FD34079DDF20737A8E4EBBCF21
+                  END:MSG
+            END:BBODY
+      END:BENV
+END:BMSG
