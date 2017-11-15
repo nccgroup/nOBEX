@@ -74,12 +74,6 @@ Test browsing local SDP services again (it should work this time):
 sudo sdptool browse local
 ```
 
-If you have `obexd` running, it may fight with nOBEX by serving up its own OBEX
-profiles, so kill it.
-```
-killall obexd
-```
-
 Get nOBEX and install it:
 ```
 git clone https://github.com/nccgroup/nOBEX.git

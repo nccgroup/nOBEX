@@ -82,6 +82,10 @@ def main(argv):
 
     signal.signal(signal.SIGINT, signal_handler)
 
+    # obexd conflicts with our own OBEX servers
+    if en_map or en_pbap:
+        os.system("killall obexd")
+
     if en_hfp:
         hfp_thread = Thread(target=serve_hfp, args=(hfp_conf,))
         hfp_thread.start()
