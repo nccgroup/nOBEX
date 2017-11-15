@@ -12,6 +12,8 @@
 import bluetooth, re, socket, time
 from nOBEX import server, common
 
+error_resp = b'ERROR'
+
 default_beast_table = {
     b'AT+CLCC': None,
     b'AT+CHLD=?': b'+CHLD: (0,1,2,3)',
@@ -19,7 +21,7 @@ default_beast_table = {
     b'AT+CPBR=?': b'+CPBR: (1-1),30,30',
     b'AT+CSCS=?': b'+CSCS: ("UTF-8","IRA","GSM","8859-1")',
     b'AT+COPS?': b'+COPS: 0,0,"WIND AWAY"',
-    b'AT+CMGE=?': b'ERROR',
+    b'AT+CMGE=?': error_resp,
     b'AT+CIND?': b'+CIND: 0,0,1,3,1,4,0',
     b'AT+CMER=3,0,0,1': None,
     b'AT+CIND=?': b'+CIND: ("call",(0,1)),("callsetup",(0-3)),("service",(0-1)),("signal",(0-5)),("roam",(0,1)),("battchg",(0-5)),("callheld",(0-2))',
@@ -27,10 +29,10 @@ default_beast_table = {
     b'AT+CSMS=?': b'+CSMS: 0,1,1,1',
     b'AT+CPBS?': b'+CPBS: "ME"',
     b'AT+CPMS="SM"': None,
-    b'AT+CMGS=?': b'ERROR',
-    b'AT+CMGD=?': b'ERROR',
+    b'AT+CMGS=?': error_resp,
+    b'AT+CMGD=?': error_resp,
     b'AT+CMGR=?': b'+CMGR: "REC READ","+85291234567",,"07/02/18,00:12:05+32"',
-    b'AT+CPMS=?': b'ERROR',
+    b'AT+CPMS=?': error_resp,
     b'AT+CCWA=1': None,
     b'AT+NREC=0': None,
     b'AT+CPBS=?': b'+CPBS: ("ME","SM","DC","RC","MC")',
@@ -146,6 +148,7 @@ class HFPServer(server.Server):
         try:
             if resp is not None:
                 sock.sendall(b'\r\n' + resp + b'\r\n')
-            sock.sendall(b'\r\nOK\r\n')
+            if resp != error_resp:
+                sock.sendall(b'\r\nOK\r\n')
         except:
             print("failure writing AT cmd response")
