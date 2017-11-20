@@ -85,6 +85,26 @@ class HFPServer(server.Server):
             self.resp_dict[cmd] = resp
         print(self.resp_dict)
 
+    @staticmethod
+    def _connect_hfp(address, control_chan=True, audio_chan=True):
+        connection = None
+
+        # Connect to RFCOMM control channel on HF (car kit)
+        if control_chan:
+            port = bluetooth.find_service(uuid="111e", address=address)[0]['port']
+            print("HFP connecting to %s on port %i" % (address, port))
+            connection = common.Socket()
+            time.sleep(0.5)
+            connection.connect((address, port))
+
+        if audio_chan and hasattr(socket, "BTPROTO_SCO"):
+            asock = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_SEQPACKET, socket.BTPROTO_SCO)
+            time.sleep(0.5)
+            asock.connect(bytes(address, encoding="UTF-8"))
+            print("HFP SCO audio socket established")
+
+        return connection
+
     def serve(self, socket):
         """
         This works a little differently from a normal server:
@@ -101,13 +121,8 @@ class HFPServer(server.Server):
         """
         while True:
             connection, address = socket.accept()
-            port = bluetooth.find_service(uuid="111e", address=address[0])[0]['port']
             connection.close()
-
-            print("HFP connecting to %s on port %i" % (address[0], port))
-            connection = common.Socket()
-            time.sleep(1)
-            connection.connect((address[0], port))
+            connection = self._connect_hfp(address)
 
             self.connected = True
             while self.connected:
