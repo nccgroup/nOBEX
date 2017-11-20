@@ -136,7 +136,7 @@ class HFPServer(server.Server):
         service_profiles = [bluetooth.HANDSFREE_PROFILE]
         provider = ""
         description = ""
-        protocols = [bluetooth.RFCOMM_UUID]
+        protocols = []
 
         return server.Server.start_service(self, port, name, uuid, service_classes,
                 service_profiles, provider, description, protocols)

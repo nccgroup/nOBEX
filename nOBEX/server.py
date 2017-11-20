@@ -23,8 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from bluetooth import BluetoothSocket, RFCOMM, OBEX_FILETRANS_CLASS, \
         OBEX_FILETRANS_PROFILE, OBEX_OBJPUSH_CLASS, OBEX_OBJPUSH_PROFILE, \
-        OBEX_UUID, PUBLIC_BROWSE_GROUP, RFCOMM_UUID, advertise_service, \
-        stop_advertising
+        OBEX_UUID, PUBLIC_BROWSE_GROUP, advertise_service, stop_advertising
 
 from nOBEX.common import OBEX_Version
 from nOBEX import headers
@@ -177,7 +176,7 @@ class PushServer(Server):
         service_profiles = [OBEX_OBJPUSH_PROFILE]
         provider = ""
         description = "File transfer"
-        protocols = [RFCOMM_UUID, OBEX_UUID]
+        protocols = [OBEX_UUID]
 
         return Server.start_service(self, port, name, uuid, service_classes,
                 service_profiles, provider, description, protocols)
@@ -190,7 +189,7 @@ class PBAPServer(Server):
         service_profiles = [OBEX_PBAP_PROFILE]
         provider = ""
         description = ""
-        protocols = [RFCOMM_UUID, OBEX_UUID]
+        protocols = [OBEX_UUID]
 
         return Server.start_service(self, port, name, uuid, service_classes,
                 service_profiles, provider, description, protocols)
@@ -203,7 +202,7 @@ class MAPServer(Server):
         service_profiles = [OBEX_MAP_PROFILE]
         provider = ""
         description = ""
-        protocols = [RFCOMM_UUID, OBEX_UUID]
+        protocols = [OBEX_UUID]
 
         return Server.start_service(self, port, name, uuid, service_classes,
                 service_profiles, provider, description, protocols)
