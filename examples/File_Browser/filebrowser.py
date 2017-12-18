@@ -16,11 +16,9 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtXml import *
 
+from nOBEX.common import OBEXError
 from nOBEX.client import BrowserClient
 from nOBEX.responses import *
-
-class OBEXError(Exception):
-    pass
 
 class OBEXHandler:
     def __init__(self, address, port):

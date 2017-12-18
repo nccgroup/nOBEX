@@ -23,6 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import socket, sys
 
+class OBEXError(Exception):
+    pass
+
 if hasattr(socket, "AF_BLUETOOTH"):
     def Socket():
         return socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM,
