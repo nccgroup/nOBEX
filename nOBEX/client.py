@@ -293,7 +293,6 @@ class Client:
         returned_headers = []
 
         for response in self._get(name, header_list):
-
             if isinstance(response, responses.Continue) or \
                     isinstance(response, responses.Success):
                 # Report successful responses if using a callback or collect
@@ -325,9 +324,9 @@ class Client:
         response = self._send_headers(request, header_list, max_length)
         yield response
 
-        if not isinstance(response, responses.Continue) and \
-                not isinstance(response, responses.Success):
-                    return
+        if not (isinstance(response, responses.Continue) or
+                isinstance(response, responses.Success)):
+            return
 
         # Retrieve the file data.
         file_data = []
