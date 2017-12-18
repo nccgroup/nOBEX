@@ -67,6 +67,10 @@ class UnknownResponse(Response):
         self.length = length
         self.data = data[3:]
 
+    def __repr__(self):
+        return "%s(code=0x%02X, length=%i, data=%s" % (
+                type(self).__name__, self.code, self.length, repr(self.data))
+
 
 class ResponseHandler(MessageHandler):
     message_dict = {
