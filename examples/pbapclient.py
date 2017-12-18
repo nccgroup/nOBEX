@@ -10,7 +10,7 @@
 # Released under GPLv3, a full copy of which can be found in COPYING.
 #
 
-import bluetooth, os, struct, sys
+import bluetooth, os, struct, sys, traceback
 from xml.etree import ElementTree
 from nOBEX import client, headers, responses
 from nOBEX.common import OBEXError
@@ -46,6 +46,7 @@ if __name__ == "__main__":
         c.connect(header_list=[headers.Target(uuid)])
     except OBEXError:
         sys.stderr.write("Failed to connect to phone.\n")
+        traceback.print_exc()
         sys.exit(1)
 
     # Access the list of vcards in the phone's internal phone book.

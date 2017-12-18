@@ -10,7 +10,7 @@
 # Released under GPLv3, a full copy of which can be found in COPYING.
 #
 
-import bluetooth, os, struct, sys, traceback
+import bluetooth, os, struct, sys
 from xml.etree import ElementTree
 from nOBEX import client, headers, responses
 from nOBEX.common import OBEXError
@@ -31,20 +31,14 @@ def escape_ampersands(s):
 def connect(device_address):
     d = bluetooth.find_service(address=device_address, uuid="1134")
     if not d:
-        sys.stderr.write("No message access service found.\n")
-        sys.exit(1)
+        raise OBEXError("No message access service found.")
 
     port = d[0]["port"]
 
     # Use the generic Client class to connect to the phone.
     c = client.Client(device_address, port)
     uuid = b'\xbb\x58\x2b\x40\x42\x0c\x11\xdb\xb0\xde\x08\x00\x20\x0c\x9a\x66'
-    try:
-        c.connect(header_list=[headers.Target(uuid)])
-    except:
-        sys.stderr.write("Failed to connect to phone.\n")
-        traceback.print_exc()
-        sys.exit(1)
+    c.connect(header_list=[headers.Target(uuid)])
 
     return c
 

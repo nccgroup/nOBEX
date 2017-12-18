@@ -62,7 +62,7 @@ class OBEXHandler:
         for subdir in pieces:
             try:
                 self.client.setpath(subdir)
-            except:
+            except OBEXError:
                 # We couldn't enter a subdirectory, so just return False to
                 # indicate an error.
                 return False
