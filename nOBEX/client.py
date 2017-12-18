@@ -127,9 +127,9 @@ class Client:
     def connect(self, header_list = ()):
         """connect(self, header_list = ())
 
-        Sends a connection message to the server and returns its response.
-        Typically, the response is either Success or a subclass of
-        FailureResponse.
+        Sends a connection message to the server. Raises an exception
+        with an error response if it fails. Typically, the response is
+        either Success or a subclass of FailureResponse.
 
         Specific headers can be sent by passing a sequence as the
         header_list keyword argument.
@@ -159,14 +159,15 @@ class Client:
         elif not self._external_socket:
             self.socket.close()
 
-        return response
+        if not isinstance(response, responses.ConnectSuccess):
+            raise OBEXError(response)
 
     def disconnect(self, header_list = ()):
         """disconnect(self, header_list = ())
 
-        Sends a disconnection message to the server and returns its response.
-        Typically, the response is either Success or a subclass of
-        FailureResponse.
+        Sends a disconnection message to the server. Raises an exception
+        with the response if it fails. Typically, the response is either
+        Success or a subclass of FailureResponse.
 
         Specific headers can be sent by passing a sequence as the
         header_list keyword argument.
@@ -185,42 +186,32 @@ class Client:
 
         self.connection_id = None
 
-        return response
+        if not isinstance(response, responses.Success):
+            raise OBEXError(response)
 
-    def put(self, name, file_data, header_list = (), callback = None):
-        """put(self, name, file_data, header_list = (), callback = None)
+    def put(self, name, file_data, header_list = ()):
+        """put(self, name, file_data, header_list = ())
 
-        Sends a file with the given name, containing the file_data specified,
-        to the server for storage in the current directory for the session.
-
-        If a callback is specified, it will be called with each response
-        obtained during the put operation. If no callback is specified, the
-        final response is returned when the put operation is complete or an
-        error occurs.
+        Performs an OBEX PUT request to send a file with the given name,
+        containing the file_data specified, to the server for storage in
+        the current directory for the session.
 
         Additional headers can be sent by passing a sequence as the
         header_list keyword argument. These will be sent after the name and
         file length information associated with the name and file_data
         supplied.
+
+        This function does not return anything. If a failure response is
+        received, an OBEXError will be raised with the error response as
+        its argument.
         """
 
         for response in self._put(name, file_data, header_list):
             if isinstance(response, responses.Continue) or \
                     isinstance(response, responses.Success):
-                # Report successful responses if using a callback.
-                if callback:
-                    callback(response)
-            elif callback:
-                # Report failure responses using the callback, then return.
-                callback(response)
-                return
+                continue
             else:
-                # Return failure responses directly.
-                return response
-
-        # Finally, return the last response if not using a callback.
-        if not callback:
-            return response
+                raise OBEXError(response)
 
     def _put(self, name, file_data, header_list = ()):
         header_list = [
@@ -270,24 +261,19 @@ class Client:
                 if not isinstance(response, responses.Success):
                     return
 
-    def get(self, name = None, header_list = (), callback = None):
+    def get(self, name = None, header_list = ()):
         """get(self, name = None, header_list = (), callback = None)
 
-        Requests the specified file from the server's current directory for
-        the session.
-
-        If a callback is specified, it will be called with each response
-        obtained during the get operation. If no callback is specified, a value
-        is returned which depends on the success of the operation.
-
-        For an operation without callback, if successful, this method returns a
-        tuple containing a list of responses received during the operation and
-        the file data received; if unsuccessful, a single response object is
-        returned.
+        Performs an OBEX GET request to retrieve a file with the given name
+        from the server's current directory for the session.
 
         Additional headers can be sent by passing a sequence as the
         header_list keyword argument. These will be sent after the name
         information.
+
+        This method returns a tuple of the form (resp_header_list, body)
+        where resp_header_list is a list of all non-body response headers,
+        and body is a reconstructed byte string of the response body.
         """
 
         returned_headers = []
@@ -295,23 +281,14 @@ class Client:
         for response in self._get(name, header_list):
             if isinstance(response, responses.Continue) or \
                     isinstance(response, responses.Success):
-                # Report successful responses if using a callback or collect
-                # them for later.
-                if callback:
-                    callback(response)
-                else:
-                    returned_headers += response.header_data
-            elif callback:
-                # Report failure responses using the callback, then return.
-                callback(response)
-                return
+                # collect responses for processing at end
+                returned_headers += response.header_data
             else:
-                # Return failure responses directly.
-                return response
+                # Raise an exception for the failure
+                raise OBEXError(response)
 
-        # Finally, return the collected responses if not using a callback.
-        if not callback:
-            return self._collect_parts(returned_headers)
+        # Finally, return the collected responses
+        return self._collect_parts(returned_headers)
 
     def _get(self, name = None, header_list = ()):
         header_list = list(header_list)
@@ -341,7 +318,8 @@ class Client:
         """setpath(self, name = "", create_dir = False, to_parent = False, header_list = ())
 
         Requests a change to the server's current directory for the session
-        to the directory with the specified name, and returns the response.
+        to the directory with the specified name. Raises an exception with the
+        response if the response was unexpected.
 
         This method is also used to perform other actions, such as navigating
         to the parent directory (set to_parent to True) and creating a new
@@ -367,13 +345,16 @@ class Client:
         request = requests.Set_Path((flags, 0))
 
         response = self._send_headers(request, header_list, max_length)
-        return response
+
+        if not isinstance(response, responses.Success):
+            raise OBEXError(response)
 
     def delete(self, name, header_list = ()):
         """delete(self, name, header_list = ())
 
         Requests the deletion of the file with the specified name from the
-        current directory and returns the server's response.
+        current directory. Raises an OBEXError with the response if there
+        is an error.
         """
 
         header_list = [
@@ -383,12 +364,16 @@ class Client:
         max_length = self.remote_info.max_packet_length
         request = requests.Put_Final()
 
-        return self._send_headers(request, header_list, max_length)
+        response = self._send_headers(request, header_list, max_length)
+
+        if not isinstance(response, responses.Success):
+            raise OBEXError(response)
 
     def abort(self, header_list = ()):
         """abort(self, header_list = ())
 
-        Aborts the current session and returns the server's response.
+        Aborts the current session. Raises an OBEXError with the response
+        if there is an error.
 
         Specific headers can be sent by passing a sequence as the
         header_list keyword argument.
@@ -403,7 +388,9 @@ class Client:
         request = requests.Abort()
 
         response = self._send_headers(request, header_list, max_length)
-        return response
+
+        if not isinstance(response, responses.Success):
+            raise OBEXError(response)
 
 class BrowserClient(Client):
     """BrowserClient(Client)
@@ -423,19 +410,16 @@ class BrowserClient(Client):
 
     def connect(self):
         uuid = b"\xF9\xEC\x7B\xC4\x95\x3C\x11\xd2\x98\x4E\x52\x54\x00\xDC\x9E\x09"
-        return Client.connect(self, header_list = [headers.Target(uuid)])
+        Client.connect(self, header_list = [headers.Target(uuid)])
 
     def capability(self):
         """capability(self)
 
-        Returns a capability object from the server, or the server's response
-        if the operation was unsuccessful.
+        Returns a capability object from the server. An exception will pass
+        through if there is an error.
         """
 
-        response = self.get(header_list=[headers.Type(b"x-obex/capability")])
-        if not isinstance(response, responses.Success):
-            return response
-        header, data = response
+        hdrs, data = self.get(header_list=[headers.Type(b"x-obex/capability")])
         return data
 
     def listdir(self, name = ""):
@@ -443,8 +427,7 @@ class BrowserClient(Client):
 
         Requests information about the contents of the directory with the
         specified name relative to the current directory for the session.
-        Returns a tuple containing the server's response and the associated
-        data.
+        Returns a an XML listing of files as a byte string.
 
         If successful, the directory contents are returned in the form of
         an XML document as described by the x-obex/folder-listing MIME type.
@@ -453,12 +436,14 @@ class BrowserClient(Client):
         of the current directory are typically listed by the server.
         """
 
-        return self.get(name, header_list=[headers.Type(b"x-obex/folder-listing", False)])
+        hdrs, data = self.get(name,
+                header_list=[headers.Type(b"x-obex/folder-listing", False)])
+        return data
 
 class SyncClient(Client):
     def connect(self, header_list = (headers.Target(b"IRMC-SYNC"),)):
-        return Client.connect(self, header_list)
+        Client.connect(self, header_list)
 
 class SyncMLClient(Client):
     def connect(self, header_list = (headers.Target(b"SYNCML-SYNC"),)):
-        return Client.connect(self, header_list)
+        Client.connect(self, header_list)

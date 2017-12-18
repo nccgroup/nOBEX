@@ -13,6 +13,7 @@
 import bluetooth, os, struct, sys
 from xml.etree import ElementTree
 from nOBEX import client, headers, responses
+from nOBEX.common import OBEXError
 
 if __name__ == "__main__":
     if not 2 <= len(sys.argv) <= 3:
@@ -41,9 +42,9 @@ if __name__ == "__main__":
     # Use the generic Client class to connect to the phone.
     c = client.Client(device_address, port)
     uuid = b"\x79\x61\x35\xf0\xf0\xc5\x11\xd8\x09\x66\x08\x00\x20\x0c\x9a\x66"
-    result = c.connect(header_list=[headers.Target(uuid)])
-
-    if not isinstance(result, responses.ConnectSuccess):
+    try:
+        c.connect(header_list=[headers.Target(uuid)])
+    except OBEXError:
         sys.stderr.write("Failed to connect to phone.\n")
         sys.exit(1)
 

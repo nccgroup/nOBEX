@@ -10,7 +10,7 @@
 # Released under GPLv3, a full copy of which can be found in COPYING.
 #
 
-import bluetooth, os, sys
+import bluetooth, os, sys, traceback
 from xml.etree import ElementTree
 from nOBEX import client, responses
 
@@ -28,28 +28,32 @@ if __name__ == "__main__":
 
     c = client.BrowserClient(device_address, port)
 
-    response = c.connect()
-    if not isinstance(response, responses.ConnectSuccess):
+    try:
+        c.connect()
+    except:
         sys.stderr.write("Failed to connect.\n")
+        traceback.print_exc()
         sys.exit(1)
 
     pieces = path.split("/")
 
     for piece in pieces:
-        response = c.setpath(piece)
-        if isinstance(response, responses.FailureResponse):
+        try:
+            c.setpath(piece)
+        except:
             sys.stderr.write("Failed to enter directory.\n")
+            traceback.print_exc()
             sys.exit(1)
 
     sys.stdout.write("Entered directory: %s\n" % path)
 
-    response = c.listdir()
-
-    if isinstance(response, responses.FailureResponse):
+    try:
+        data = c.listdir()
+    except:
         sys.stderr.write("Failed to list directory.\n")
+        traceback.print_exc()
         sys.exit(1)
 
-    headers, data = response
     tree = ElementTree.fromstring(data)
     for element in tree.findall("file"):
         name = element.attrib["name"]
@@ -60,17 +64,12 @@ if __name__ == "__main__":
 
         sys.stdout.write("Fetching file: %s\n" % name)
 
-        response = c.get(name)
+        headers, data = c.get(name)
 
-        if isinstance(response, responses.FailureResponse):
-            sys.stderr.write("Failed to get file: %s\n" % name)
-        else:
-            sys.stdout.write("Writing file: %s\n" % name)
-            headers, data = response
-            try:
-                open(name, "wb").write(data)
-            except IOError:
-                sys.stderr.write("Failed to write file: %s\n" % name)
+        try:
+            open(name, "wb").write(data)
+        except IOError:
+            sys.stderr.write("Failed to write file: %s\n" % name)
 
     c.disconnect()
     sys.exit()

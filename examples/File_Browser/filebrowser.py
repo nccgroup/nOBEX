@@ -23,9 +23,7 @@ from nOBEX.responses import *
 class OBEXHandler:
     def __init__(self, address, port):
         self.client = BrowserClient(address, port)
-        if not isinstance(self.client.connect(), ConnectSuccess):
-            raise OBEXError, "Failed to connect"
-
+        self.client.connect()
         self.path = []
 
     def setpath(self, path):
@@ -49,10 +47,9 @@ class OBEXHandler:
 
         # Leave any subdirectories of the common path.
         for subdir in self.path:
-
-            response = self.client.setpath(to_parent = True)
-
-            if isinstance(response, FailureResponse):
+            try:
+                self.client.setpath(to_parent = True)
+            except OBEXError:
                 # We couldn't leave a subdirectory. Put the remaining path
                 # back together and return False to indicate an error.
                 self.path = common + self.path
@@ -63,9 +60,9 @@ class OBEXHandler:
 
         # Descend into the new path.
         for subdir in pieces:
-
-            response = self.client.setpath(subdir)
-            if isinstance(response, FailureResponse):
+            try:
+                self.client.setpath(subdir)
+            except:
                 # We couldn't enter a subdirectory, so just return False to
                 # indicate an error.
                 return False
@@ -75,8 +72,9 @@ class OBEXHandler:
         return True
 
     def listdir(self, subdir = ""):
-        response = self.client.listdir(subdir.lstrip("/"))
-        if isinstance(response, FailureResponse):
+        try:
+            listing = self.client.listdir(subdir.lstrip("/"))
+        except OBEXError:
             return False
 
         headers, listing = response

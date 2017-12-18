@@ -43,8 +43,7 @@ class Continue(Response):
 class Success(Response):
     code = OBEX_OK = OBEX_Success = 0xA0
 
-class ConnectSuccess(Response):
-    code = OBEX_OK = OBEX_Success = 0xA0
+class ConnectSuccess(Success):
     format = "BBH"
 
 class Bad_Request(FailureResponse):

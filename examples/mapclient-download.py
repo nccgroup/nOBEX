@@ -10,9 +10,10 @@
 # Released under GPLv3, a full copy of which can be found in COPYING.
 #
 
-import bluetooth, os, struct, sys
+import bluetooth, os, struct, sys, traceback
 from xml.etree import ElementTree
 from nOBEX import client, headers, responses
+from nOBEX.common import OBEXError
 
 def dump_xml(element, file_name):
     fd = open(file_name, 'wb')
@@ -38,10 +39,11 @@ def connect(device_address):
     # Use the generic Client class to connect to the phone.
     c = client.Client(device_address, port)
     uuid = b'\xbb\x58\x2b\x40\x42\x0c\x11\xdb\xb0\xde\x08\x00\x20\x0c\x9a\x66'
-    result = c.connect(header_list=[headers.Target(uuid)])
-
-    if not isinstance(result, responses.ConnectSuccess):
+    try:
+        c.connect(header_list=[headers.Target(uuid)])
+    except:
         sys.stderr.write("Failed to connect to phone.\n")
+        traceback.print_exc()
         sys.exit(1)
 
     return c
