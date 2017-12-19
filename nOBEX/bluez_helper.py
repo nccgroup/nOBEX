@@ -15,8 +15,9 @@ class SDPException(Exception):
 adv_services = set()
 
 def stop_all():
-    for sn in adv_services:
-        stop_advertising(sn)
+    while len(adv_services):
+        sn = adv_services.pop()
+        stop_advertising(sn, False)
 
 # clean up whatever services we started whenever we close the server
 atexit.register(stop_all)
@@ -32,16 +33,18 @@ def advertise_service(name, channel):
         raise SDPException("sdptool add returned %i" % val.returncode)
     adv_services.add(name)
 
-def stop_advertising(name):
+def stop_advertising(name, pop=True):
     name = name.upper()
-    if not name in adv_services:
+    if pop and not name in adv_services:
         return
 
     h, c = _search_record(name, "local")
     val = subprocess.run(["sdptool", "del", h], stdout=subprocess.PIPE)
     if val.returncode != 0:
         raise SDPException("sdptool del returned %i" % val.returncode)
-    adv_services.remove(name)
+
+    if pop:
+        adv_services.remove(name)
 
 def find_service(name, bdaddr):
     h, c = _search_record(name, bdaddr)
