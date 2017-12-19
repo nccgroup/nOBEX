@@ -124,8 +124,20 @@ To run a standalone HFP server (config file is optional):
 sudo python3 examples/multiserver.py --hfp [config_file]
 ```
 
+### FTP
+The FTP server allows a client to browse files on your computer (server) inside a specified folder.
+```
+sudo python3 examples/multiserver.py --ftp PATH_TO_FTP_FOLDER
+```
+
+### OPP
+The OPP server allows a client to push files to your computer (server) inside a specified folder.
+```
+sudo python3 examples/multiserver.py --opp PATH_TO_OPP_FOLDER
+```
+
 ### Combining servers
-The multiserver.py scripts allows running any combination of HFP, MAP, and PBAP servers
+The multiserver.py scripts allows running any combination of HFP, MAP, PBAP, FTP, and OPP servers
 simultaneously. Just combine the arguments from the examples shown above. To run HFP, MAP, and
 PBAP simultaneously:
 ```
