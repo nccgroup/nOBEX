@@ -71,9 +71,9 @@ class HFPMessageHandler(object):
         return bytes(msg)
 
 class HFPServer(server.Server):
-    def __init__(self, beast_file=None):
+    def __init__(self, beast_file=None, address=None):
         """beast_file is a bbeast format AT command response table file"""
-        super(HFPServer, self).__init__()
+        super(HFPServer, self).__init__(address)
         self.request_handler = HFPMessageHandler()
         self.resp_dict = default_beast_table
         if beast_file: self._load_beast(beast_file)

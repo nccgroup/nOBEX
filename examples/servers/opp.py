@@ -14,9 +14,11 @@ from nOBEX import headers, responses, server
 class OPPServer(server.Server):
     """OBEX Object Push Profile Server"""
 
-    def __init__(self, address, directory):
+    def __init__(self, directory, address=None):
         super(OPPServer, self).__init__(address)
         self.directory = directory
+        if not os.path.exists(self.directory):
+            os.mkdir(self.directory)
 
     def start_service(self, port=None):
         return super(OPPServer, self).start_service("opush", port)

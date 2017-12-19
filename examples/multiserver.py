@@ -11,32 +11,15 @@
 #
 
 import os, signal, sys, traceback
-from servers import hfp, pbap
-from servers import map as map_
+from servers.hfp import HFPServer
+from servers.map import MAPServer
+from servers.pbap import PBAPServer
+from servers.opp import OPPServer
+from servers.ftp import FTPServer
 from threading import Thread
 
-def serve_hfp(beast_file=None):
-    server = hfp.HFPServer(beast_file)
-    socket = server.start_service()
-    while True:
-        try:
-            server.serve(socket)
-        except:
-            traceback.print_exc()
-
-
-def serve_pbap(folder):
-    server = pbap.PBAPServer("", folder)
-    socket = server.start_service()
-    while True:
-        try:
-            server.serve(socket)
-        except:
-            traceback.print_exc()
-
-
-def serve_map(folder):
-    server = map_.MAPServer("", folder)
+def serve(serv_class, *args, **kwargs):
+    server = serv_class(*args, **kwargs)
     socket = server.start_service()
     while True:
         try:
@@ -45,7 +28,12 @@ def serve_map(folder):
             traceback.print_exc()
 
 def usage(argv):
-    sys.stderr.write("Usage: %s [--hfp [config]] [--pbap pbap_root] [--map map_root]\n" % argv[0])
+    sys.stderr.write("Usage: %s " % argv[0])
+    sys.stderr.write("[--hfp [config]] ")
+    sys.stderr.write("[--pbap pbap_root] ")
+    sys.stderr.write("[--map map_root] ")
+    sys.stderr.write("[--ftp ftp_root] ")
+    sys.stderr.write("[--opp opp_root]\n")
 
 def signal_handler(signal, frame):
     sys.exit(0)
@@ -58,9 +46,13 @@ def main(argv):
     en_hfp = False
     en_map = False
     en_pbap = False
+    en_ftp = False
+    en_opp = False
     hfp_conf = None
     map_conf = None
     pbap_conf = None
+    ftp_conf = None
+    opp_conf = None
 
     args = argv[1:]
     while len(args):
@@ -75,6 +67,12 @@ def main(argv):
         elif a == "--pbap":
             en_pbap = True
             pbap_conf = args.pop(0)
+        elif a == "--ftp":
+            en_ftp = True
+            ftp_conf = args.pop(0)
+        elif a == "--opp":
+            en_opp = True
+            opp_conf = args.pop(0)
         else:
             sys.stderr.write("unknown parameter %s\n" % a)
             usage(argv)
@@ -83,20 +81,38 @@ def main(argv):
     signal.signal(signal.SIGINT, signal_handler)
 
     # obexd conflicts with our own OBEX servers
-    if en_map or en_pbap:
-        os.system("killall obexd")
+    os.system("killall obexd")
+
+    threads = []
 
     if en_hfp:
-        hfp_thread = Thread(target=serve_hfp, args=(hfp_conf,))
+        hfp_thread = Thread(target=serve, args=(HFPServer, hfp_conf))
         hfp_thread.start()
+        threads.append(hfp_thread)
 
     if en_map:
-        map_thread = Thread(target=serve_map, args=(map_conf,))
+        map_thread = Thread(target=serve, args=(MAPServer, map_conf))
         map_thread.start()
+        threads.append(map_thread)
 
     if en_pbap:
-        pbap_thread = Thread(target=serve_pbap, args=(pbap_conf,))
+        pbap_thread = Thread(target=serve, args=(PBAPServer, pbap_conf))
         pbap_thread.start()
+        threads.append(pbap_thread)
+
+    if en_ftp:
+        ftp_thread = Thread(target=serve, args=(FTPServer, ftp_conf))
+        ftp_thread.start()
+        threads.append(ftp_thread)
+
+    if en_opp:
+        opp_thread = Thread(target=serve, args=(OPPServer, opp_conf))
+        opp_thread.start()
+        threads.append(opp_thread)
+
+    # wait for completion (never)
+    for t in threads:
+        t.join()
 
     return 0
 

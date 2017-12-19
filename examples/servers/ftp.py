@@ -40,9 +40,11 @@ def gen_folder_listing(path):
 class FTPServer(server.Server):
     """OBEX File Transfer Profile Server"""
 
-    def __init__(self, address, directory):
+    def __init__(self, directory, address=None):
         super(FTPServer, self).__init__(address)
         self.directory = os.path.abspath(directory)
+        if not os.path.exists(self.directory):
+            os.mkdir(self.directory)
 
     def start_service(self, port=None):
         return super(FTPServer, self).start_service("ftp", port)

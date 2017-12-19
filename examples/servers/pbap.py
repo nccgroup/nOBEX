@@ -26,7 +26,7 @@ def gen_body_headers(data, csize=65500):
 
 
 class PBAPServer(server.Server):
-    def __init__(self, address, directory):
+    def __init__(self, directory, address=None):
         super(PBAPServer, self).__init__(address)
         self.directory = os.path.abspath(directory).rstrip(os.sep)
         self.cur_directory = self.directory

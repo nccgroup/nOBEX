@@ -30,8 +30,8 @@ from nOBEX import requests
 from nOBEX import responses
 
 class Server(object):
-    def __init__(self, address = ""):
-        if len(address) == 0:
+    def __init__(self, address=None):
+        if address is None:
             address = bluez_helper.BDADDR_ANY
 
         self.address = address
