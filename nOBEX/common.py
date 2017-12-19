@@ -4,6 +4,7 @@
 common.py - Classes providing common facilities for other modules.
 
 Copyright (C) 2007 David Boddie <david@boddie.org.uk>
+Copyright (C) 2017 Sultan Qasim Khan <Sultan.QasimKhan@nccgroup.trust>
 
 This file is part of the nOBEX Python package.
 

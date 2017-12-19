@@ -71,7 +71,7 @@ class FTPServer(server.Server):
                 print(s)
 
                 response = responses.Success()
-                response_headers = [headers.Name(name.encode("utf8")),
+                response_headers = [headers.Name(name),
                         headers.Length(len(s)),
                         headers.Body(s.encode("utf8"))]
                 self.send_response(socket, response, response_headers)

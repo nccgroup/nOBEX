@@ -4,6 +4,7 @@
 headers.py - Classes encapsulating OBEX headers.
 
 Copyright (C) 2007 David Boddie <david@boddie.org.uk>
+Copyright (C) 2017 Sultan Qasim Khan <Sultan.QasimKhan@nccgroup.trust>
 
 This file is part of the nOBEX Python package.
 
@@ -25,7 +26,7 @@ import struct
 import sys
 
 class Header:
-    def __init__(self, data, encoded = False):
+    def __init__(self, data, encoded=False):
         if encoded:
             self.data = data
         else:
