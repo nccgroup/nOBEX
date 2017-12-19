@@ -1,4 +1,4 @@
-import socket, subprocess, sys
+import atexit, socket, subprocess, sys
 import xml.etree.ElementTree as ET
 
 # need to make sure this works
@@ -13,17 +13,36 @@ def BluetoothSocket():
 class SDPException(Exception):
     pass
 
+adv_services = set()
+
+def stop_all():
+    for sn in adv_services:
+        stop_advertising(sn)
+
+# clean up whatever services we started whenever we close the server
+atexit.register(stop_all)
+
 def advertise_service(name, channel):
+    name = name.upper()
+    if name in adv_services:
+        raise SDPException("Can't re-advertise a service")
+
     val = subprocess.run(["sdptool", "add", "--channel=%i" % channel, name],
             stdout=subprocess.PIPE)
     if val.returncode != 0:
         raise SDPException("sdptool add returned %i" % val.returncode)
+    adv_services.add(name)
 
 def stop_advertising(name):
+    name = name.upper()
+    if not name in adv_services:
+        return
+
     h, c = _search_record(name, "local")
     val = subprocess.run(["sdptool", "del", h], stdout=subprocess.PIPE)
     if val.returncode != 0:
         raise SDPException("sdptool del returned %i" % val.returncode)
+    adv_services.remove(name)
 
 def find_service(name, bdaddr):
     h, c = _search_record(name, bdaddr)
