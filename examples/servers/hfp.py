@@ -9,8 +9,9 @@
 # Released under GPLv3, a full copy of which can be found in COPYING.
 #
 
-import bluetooth, re, socket, time
+import re, socket, time
 from nOBEX import server, common
+from nOBEX.bluez_helper import find_service
 
 error_resp = b'ERROR'
 
@@ -91,7 +92,7 @@ class HFPServer(server.Server):
 
         # Connect to RFCOMM control channel on HF (car kit)
         if control_chan:
-            port = bluetooth.find_service(uuid="111e", address=address)[0]['port']
+            port = find_service("hf", address)
             print("HFP connecting to %s on port %i" % (address, port))
             connection = common.Socket()
             time.sleep(0.5)

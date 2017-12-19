@@ -10,9 +10,10 @@
 # Released under GPLv3, a full copy of which can be found in COPYING.
 #
 
-import bluetooth, os, sys, traceback
+import os, sys, traceback
 from xml.etree import ElementTree
 from nOBEX import client, responses
+from nOBEX.bluez_helper import find_service
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
@@ -22,10 +23,7 @@ if __name__ == "__main__":
     device_address = sys.argv[1]
     path = sys.argv[2]
 
-    services = bluetooth.find_service(uuid="1106", address=device_address)
-    if services:
-        port = services[0]["port"]
-
+    port = find_service("ftp", device_address)
     c = client.BrowserClient(device_address, port)
 
     try:

@@ -10,9 +10,10 @@
 # Released under GPLv3, a full copy of which can be found in COPYING.
 #
 
-import bluetooth, os, struct, sys, traceback
+import os, struct, sys, traceback
 from nOBEX import client, headers, responses
 from nOBEX.common import OBEXError
+from nOBEX.bluez_helper import find_service
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
@@ -22,14 +23,9 @@ if __name__ == "__main__":
     device_address = sys.argv[1]
     file_name = sys.argv[2]
 
-    d = bluetooth.find_service(address=device_address, uuid="1105")
-    if not d:
-        sys.stderr.write("No Object Push service found.\n")
-        sys.exit(1)
-
-    port = d[0]["port"]
-
+    port = find_service("opush", device_address)
     c = client.Client(device_address, port)
+
     try:
         c.connect()
     except OBEXError:

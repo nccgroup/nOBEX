@@ -14,8 +14,9 @@
 # connection in a thread. However, since the connection operation blocks, there
 # is no way to terminate the operation from within the thread itself.
 
-import bluetooth, sys, threading
+import sys, threading
 from nOBEX import client, responses
+from nOBEX.bluez_helper import find_service
 
 class CallerException(Exception):
     pass
@@ -46,13 +47,7 @@ if __name__ == "__main__":
 
     device_address = sys.argv[1]
 
-    services = bluetooth.find_service(uuid="1106", address=device_address)
-    if not services:
-        sys.stderr.write("No file transfer service on the device.\n")
-        sys.exit(1)
-
-    port = services[0]["port"]
-
+    port = find_service("ftp", device_address)
     c = client.BrowserClient(device_address, port)
 
     call = Caller()

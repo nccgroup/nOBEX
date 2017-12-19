@@ -10,11 +10,12 @@
 # Released under GPLv3, a full copy of which can be found in COPYING.
 #
 
-import bluetooth, os, struct, sys
+import os, struct, sys
 from xml.etree import ElementTree
 from xml.dom import minidom
 from nOBEX import client, headers, responses
 from nOBEX.common import OBEXError
+from nOBEX.bluez_helper import find_service
 
 def usage():
     sys.stderr.write("Usage: %s <device address> <dest directory> [SIM]\n" % sys.argv[0])
@@ -37,11 +38,7 @@ def escape_ampersands(s):
     return bytes(us2, encoding='utf-8')
 
 def connect(device_address):
-    d = bluetooth.find_service(address=device_address, uuid="1130")
-    if not d:
-        raise OBEXError("No Phonebook service found")
-
-    port = d[0]["port"]
+    port = find_service("pbap", device_address)
 
     # Use the generic Client class to connect to the phone.
     c = client.Client(device_address, port)

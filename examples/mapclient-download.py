@@ -10,10 +10,11 @@
 # Released under GPLv3, a full copy of which can be found in COPYING.
 #
 
-import bluetooth, os, struct, sys
+import os, struct, sys
 from xml.etree import ElementTree
 from nOBEX import client, headers, responses
 from nOBEX.common import OBEXError
+from nOBEX.bluez_helper import find_service
 
 def dump_xml(element, file_name):
     fd = open(file_name, 'wb')
@@ -29,11 +30,7 @@ def escape_ampersands(s):
     return bytes(us2, encoding='utf-8')
 
 def connect(device_address):
-    d = bluetooth.find_service(address=device_address, uuid="1134")
-    if not d:
-        raise OBEXError("No message access service found.")
-
-    port = d[0]["port"]
+    port = find_service("map", device_address)
 
     # Use the generic Client class to connect to the phone.
     c = client.Client(device_address, port)

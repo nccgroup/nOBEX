@@ -8,7 +8,7 @@
 # Released under GPLv3, a full copy of which can be found in COPYING.
 #
 
-import bluetooth, os, stat, sys
+import os, stat, sys
 from nOBEX import headers, requests, responses, server
 from datetime import datetime
 
