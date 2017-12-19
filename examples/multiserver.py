@@ -10,7 +10,7 @@
 # Released under GPLv3, a full copy of which can be found in COPYING.
 #
 
-import bluetooth, os, signal, sys, traceback
+import os, signal, sys, traceback
 from servers import hfp, pbap
 from servers import map as map_
 from threading import Thread
