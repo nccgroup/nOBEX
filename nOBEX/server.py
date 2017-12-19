@@ -21,16 +21,19 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from bluetooth import BluetoothSocket, RFCOMM, PORT_ANY
+from bluetooth import PORT_ANY
 
 from nOBEX.common import OBEX_Version
-from nOBEX.bluez_helper import advertise_service, stop_advertising
+from nOBEX import bluez_helper
 from nOBEX import headers
 from nOBEX import requests
 from nOBEX import responses
 
 class Server(object):
     def __init__(self, address = ""):
+        if len(address) == 0:
+            address = bluez_helper.BDADDR_ANY
+
         self.address = address
         self.max_packet_length = 0xffff
         self.obex_version = OBEX_Version()
@@ -40,7 +43,7 @@ class Server(object):
         if port is None:
             port = PORT_ANY
 
-        socket = BluetoothSocket(RFCOMM)
+        socket = bluez_helper.BluetoothSocket()
         socket.bind((self.address, port))
         socket.listen(1)
 
@@ -48,12 +51,12 @@ class Server(object):
         port = socket.getsockname()[1]
 
         print("Starting server for %s on port %i" % socket.getsockname())
-        advertise_service(name, port)
+        bluez_helper.advertise_service(name, port)
 
         return socket
 
     def stop_service(self, name):
-        stop_advertising(name)
+        bluez_helper.stop_advertising(name)
 
     def serve(self, socket):
         while True:
@@ -65,7 +68,12 @@ class Server(object):
             self.connected = True
 
             while self.connected:
-                request = self.request_handler.decode(connection)
+                try:
+                    request = self.request_handler.decode(connection)
+                except ConnectionResetError:
+                    print("Connection to %s on port %i reset by peer!" % address)
+                    self.connected = False
+                    break
                 self.process_request(connection, request)
 
     def _max_length(self):

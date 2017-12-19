@@ -5,6 +5,8 @@ def BluetoothSocket():
     return socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM,
             socket.BTPROTO_RFCOMM)
 
+BDADDR_ANY = socket.BDADDR_ANY
+
 # We are using the deprecated Bluez "Service" API instead of the new "Profile"
 # API since the "Service" API works more the way I want it to.
 # sdptool is the easy/lazy way to use this API without native code

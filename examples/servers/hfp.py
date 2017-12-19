@@ -65,7 +65,7 @@ class HFPMessageHandler(object):
         while not (msg.endswith(b'\r') or msg.endswith(b'\n')):
             try:
                 msg.extend(sock.recv(1))
-            except bluetooth.btcommon.BluetoothError:
+            except ConnectionResetError:
                 print("connection reset")
                 break
         return bytes(msg)
