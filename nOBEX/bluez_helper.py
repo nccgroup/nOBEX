@@ -58,12 +58,34 @@ def stop_all():
 # clean up whatever services we started whenever we close the server
 atexit.register(stop_all)
 
+# Python versions older than 3.5 don't have subprocess.run
+# This wrapper produces equivalent functionality on old versions
+def subrun(args, stdout=None):
+    if hasattr(subprocess, "run"):
+        return subprocess.run(args, stdout=stdout)
+    else:
+        class SubrunResult(object):
+            def __init__(self, retcode=0, output=None):
+                self.returncode = retcode
+                self.output = output
+
+        if stdout:
+            try:
+                output = subprocess.check_output(args)
+            except subprocess.CalledProcessError as e:
+                return SubrunResult(e.returncode, e.output)
+            else:
+                return SubrunResult(0, output)
+        else:
+            ret = subprocess.call(args)
+            return SubrunResult(ret)
+
 def advertise_service(name, channel):
     name = name.upper()
     if name in adv_services:
         raise SDPException("Can't re-advertise a service")
 
-    val = subprocess.run(["sdptool", "add", "--channel=%i" % channel, name],
+    val = subrun(["sdptool", "add", "--channel=%i" % channel, name],
             stdout=subprocess.PIPE)
     if val.returncode != 0:
         raise SDPException("sdptool add returned %i" % val.returncode)
@@ -75,7 +97,7 @@ def stop_advertising(name, pop=True):
         return
 
     h, c = _search_record(name, "local")
-    val = subprocess.run(["sdptool", "del", h], stdout=subprocess.PIPE)
+    val = subrun(["sdptool", "del", h], stdout=subprocess.PIPE)
     if val.returncode != 0:
         raise SDPException("sdptool del returned %i" % val.returncode)
 
@@ -87,7 +109,7 @@ def find_service(name, bdaddr):
     return c
 
 def _search_record(name, bdaddr):
-    val = subprocess.run(
+    val = subrun(
             ["sdptool", "search", "--xml", "--bdaddr=%s" % bdaddr, name],
             stdout=subprocess.PIPE)
     if val.returncode != 0:
