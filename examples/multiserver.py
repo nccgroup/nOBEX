@@ -18,6 +18,11 @@ from servers.opp import OPPServer
 from servers.ftp import FTPServer
 from threading import Thread
 
+def thread_serve(serv_class, arg):
+    t = Thread(target=serve, args=(serv_class, arg), daemon=True)
+    t.start()
+    return t
+
 def serve(serv_class, *args, **kwargs):
     server = serv_class(*args, **kwargs)
     socket = server.start_service()
@@ -36,6 +41,7 @@ def usage(argv):
     sys.stderr.write("[--opp opp_root]\n")
 
 def signal_handler(signal, frame):
+    print() # newline to move ^C onto its own line on display
     sys.exit(0)
 
 def main(argv):
@@ -86,29 +92,19 @@ def main(argv):
     threads = []
 
     if en_hfp:
-        hfp_thread = Thread(target=serve, args=(HFPServer, hfp_conf))
-        hfp_thread.start()
-        threads.append(hfp_thread)
+        threads.append(thread_serve(HFPServer, hfp_conf))
 
     if en_map:
-        map_thread = Thread(target=serve, args=(MAPServer, map_conf))
-        map_thread.start()
-        threads.append(map_thread)
+        threads.append(thread_serve(MAPServer, map_conf))
 
     if en_pbap:
-        pbap_thread = Thread(target=serve, args=(PBAPServer, pbap_conf))
-        pbap_thread.start()
-        threads.append(pbap_thread)
+        threads.append(thread_serve(PBAPServer, pbap_conf))
 
     if en_ftp:
-        ftp_thread = Thread(target=serve, args=(FTPServer, ftp_conf))
-        ftp_thread.start()
-        threads.append(ftp_thread)
+        threads.append(thread_serve(FTPServer, ftp_conf))
 
     if en_opp:
-        opp_thread = Thread(target=serve, args=(OPPServer, opp_conf))
-        opp_thread.start()
-        threads.append(opp_thread)
+        threads.append(thread_serve(OPPServer, opp_conf))
 
     # wait for completion (never)
     for t in threads:
