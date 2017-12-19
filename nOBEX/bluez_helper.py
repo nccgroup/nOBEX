@@ -28,12 +28,25 @@ def BluetoothSocket():
 
 BDADDR_ANY = socket.BDADDR_ANY
 
+class SDPException(Exception):
+    pass
+
+def get_available_port(address=BDADDR_ANY):
+    for c in range(1, 31):
+        s = BluetoothSocket()
+        try:
+            s.bind((address, c))
+        except OSError:
+            s.close()
+        else:
+            s.close()
+            return c
+
+    raise SDPException("All ports are in use!")
+
 # We are using the deprecated Bluez "Service" API instead of the new "Profile"
 # API since the "Service" API works more the way I want it to.
 # sdptool is the easy/lazy way to use this API without native code
-
-class SDPException(Exception):
-    pass
 
 adv_services = set()
 

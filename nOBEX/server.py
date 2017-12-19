@@ -21,8 +21,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from bluetooth import PORT_ANY
-
 from nOBEX.common import OBEX_Version
 from nOBEX import bluez_helper
 from nOBEX import headers
@@ -41,14 +39,11 @@ class Server(object):
 
     def start_service(self, name, port=None):
         if port is None:
-            port = PORT_ANY
+            port = bluez_helper.get_available_port(self.address)
 
         socket = bluez_helper.BluetoothSocket()
         socket.bind((self.address, port))
         socket.listen(1)
-
-        # port may have changed for PORT_ANY
-        port = socket.getsockname()[1]
 
         print("Starting server for %s on port %i" % socket.getsockname())
         bluez_helper.advertise_service(name, port)
