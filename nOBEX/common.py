@@ -21,38 +21,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import socket, sys
+import socket, struct, sys
+from nOBEX import headers
 
 class OBEXError(Exception):
     pass
-
-if hasattr(socket, "AF_BLUETOOTH"):
-    def Socket():
-        return socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM,
-                socket.BTPROTO_RFCOMM)
-else:
-    try:
-        from bluetooth import BluetoothSocket, RFCOMM
-    except ImportError:
-        raise
-
-    if sys.platform == "win32":
-        class Socket(BluetoothSocket):
-            def __init__(self):
-                BluetoothSocket.__init__(self, RFCOMM)
-            def sendall(self, data):
-                while data:
-                    sent = self.send(data)
-                    if sent > 0:
-                        data = data[sent:]
-                    elif sent < 0:
-                        raise socket.error
-    else:
-        def Socket():
-            return BluetoothSocket(RFCOMM)
-
-import struct
-from nOBEX import headers
 
 class OBEX_Version:
     major = 1
@@ -164,30 +137,25 @@ class Message:
             return msg_chunks[0]
 
 class MessageHandler:
-    format = ">BH"
-
-    if sys.platform == "win32":
-        def _read_packet(self, socket_):
-            data = b""
+    def _read_packet(self, socket_):
+        if hasattr(socket, "MSG_WAITALL"):
+            data = socket_.recv(3, socket.MSG_WAITALL)
+        else:
+            # Windows lacks MSG_WAITALL
+            data = b''
             while len(data) < 3:
                 data += socket_.recv(3 - len(data))
-            type, length = struct.unpack(self.format, data)
-            while len(data) < length:
-                data += socket_.recv(length - len(data))
-            return type, length, data
-    else:
-        def _read_packet(self, socket_):
-            data = socket_.recv(3, socket.MSG_WAITALL)
-            type, length = struct.unpack(self.format, data)
-            body_len = length - 3
-            while body_len > 0:
-                read_len = 32767 if body_len > 32767 else body_len
-                data += socket_.recv(read_len, socket.MSG_WAITALL)
-                body_len -= read_len
-            return type, length, data
 
-    def decode(self, socket):
-        code, length, data = self._read_packet(socket)
+        type, length = struct.unpack(">BH", data)
+        body_len = length - 3
+        while body_len > 0:
+            read_len = 32767 if body_len > 32767 else body_len
+            data += socket_.recv(read_len, socket.MSG_WAITALL)
+            body_len -= read_len
+        return type, length, data
+
+    def decode(self, socket_):
+        code, length, data = self._read_packet(socket_)
         if code in self.message_dict:
             message = self.message_dict[code]()
             message.read_data(data)

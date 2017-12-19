@@ -21,7 +21,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from nOBEX.common import OBEX_Version, Socket
+from nOBEX.common import OBEX_Version
+from nOBEX.bluez_helper import BluetoothSocket
 from nOBEX import headers
 from nOBEX import requests
 from nOBEX import responses
@@ -136,7 +137,7 @@ class Client:
         """
 
         if not self._external_socket:
-            self.socket = Socket()
+            self.socket = BluetoothSocket()
 
         self.socket.connect((self.address, self.port))
 
@@ -404,8 +405,8 @@ class BrowserClient(Client):
     should correspond to the port providing the folder-browsing service.
 
     To determine the correct port, examine the advertised services for a
-    device by calling the bluetooth.find_service() function with the
-    address of the device as the only argument.
+    device by calling the nOBEX.bluez_helper.find_service() function with the
+    service name and address of the device as arguments.
     """
 
     def connect(self):

@@ -1,7 +1,6 @@
 import atexit, socket, subprocess, sys
 import xml.etree.ElementTree as ET
 
-# need to make sure this works
 def BluetoothSocket():
     return socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM,
             socket.BTPROTO_RFCOMM)
