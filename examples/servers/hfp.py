@@ -78,6 +78,9 @@ class HFPServer(server.Server):
         self.resp_dict = default_beast_table
         if beast_file: self._load_beast(beast_file)
 
+    def start_service(self, port=3):
+        return super(HFPServer, self).start_service("hfag", port)
+
     def _load_beast(self, beast_file):
         lines = open(beast_file, 'rb').readlines()
         for l in lines:
@@ -129,18 +132,6 @@ class HFPServer(server.Server):
             while self.connected:
                 request = self.request_handler.decode(connection)
                 self.process_request(connection, request)
-
-    def start_service(self, port=3):
-        name = "Handsfree Gateway"
-        uuid = bluetooth.PUBLIC_BROWSE_GROUP
-        service_classes = [bluetooth.HANDSFREE_AGW_CLASS, bluetooth.GENERIC_AUDIO_CLASS]
-        service_profiles = [bluetooth.HANDSFREE_PROFILE]
-        provider = ""
-        description = ""
-        protocols = []
-
-        return server.Server.start_service(self, port, name, uuid, service_classes,
-                service_profiles, provider, description, protocols)
 
     def process_request(self, sock, cmd):
         print("received AT cmd: %s" % cmd)

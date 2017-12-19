@@ -21,19 +21,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from bluetooth import BluetoothSocket, RFCOMM, OBEX_FILETRANS_CLASS, \
-        OBEX_FILETRANS_PROFILE, OBEX_OBJPUSH_CLASS, OBEX_OBJPUSH_PROFILE, \
-        OBEX_UUID, PUBLIC_BROWSE_GROUP, advertise_service, stop_advertising
+from bluetooth import BluetoothSocket, RFCOMM, PORT_ANY
 
 from nOBEX.common import OBEX_Version
+from nOBEX.bluez_helper import advertise_service, stop_advertising
 from nOBEX import headers
 from nOBEX import requests
 from nOBEX import responses
-
-OBEX_PBAP_CLASS = "112F"
-OBEX_PBAP_PROFILE = ("1130", 0x0101)
-OBEX_MAP_CLASS = "1132"
-OBEX_MAP_PROFILE = ("1134", 0x0102)
 
 class Server(object):
     def __init__(self, address = ""):
@@ -42,23 +36,24 @@ class Server(object):
         self.obex_version = OBEX_Version()
         self.request_handler = requests.RequestHandler()
 
-    def start_service(self, port, name, uuid, service_classes, service_profiles,
-            provider, description, protocols):
+    def start_service(self, name, port=None):
+        if port is None:
+            port = PORT_ANY
+
         socket = BluetoothSocket(RFCOMM)
         socket.bind((self.address, port))
         socket.listen(1)
 
-        advertise_service(
-                socket, name, uuid, service_classes, service_profiles,
-                provider, description, protocols
-                )
+        # port may have changed for PORT_ANY
+        port = socket.getsockname()[1]
 
         print("Starting server for %s on port %i" % socket.getsockname())
-        #self.serve(socket)
+        advertise_service(name, port)
+
         return socket
 
-    def stop_service(self, socket):
-        stop_advertising(socket)
+    def stop_service(self, name):
+        stop_advertising(name)
 
     def serve(self, socket):
         while True:
@@ -145,64 +140,3 @@ class Server(object):
 
     def set_path(self, socket, request):
         self._reject(socket)
-
-class BrowserServer(Server):
-    def start_service(self, port = None):
-        if port is None:
-            port = get_available_port(RFCOMM)
-
-        name = "OBEX File Transfer"
-        # "E006" also appears to work if used as a service ID. However, 1106
-        # is the official profile number:
-        # (https://www.bluetooth.org/en-us/specification/assigned-numbers/service-discovery)
-        uuid = "F9EC7BC4-953C-11d2-984E-525400DC9E09"
-        service_classes = [OBEX_FILETRANS_CLASS]
-        service_profiles = [OBEX_FILETRANS_PROFILE]
-        provider = ""
-        description = "File transfer"
-        protocols = [OBEX_UUID]
-
-        return Server.start_service(self, port, name, uuid, service_classes,
-                service_profiles, provider, description, protocols)
-
-class PushServer(Server):
-    def start_service(self, port = None):
-        if port is None:
-            port = get_available_port(RFCOMM)
-
-        name = "OBEX Object Push"
-        uuid = PUBLIC_BROWSE_GROUP
-        service_classes = [OBEX_OBJPUSH_CLASS]
-        service_profiles = [OBEX_OBJPUSH_PROFILE]
-        provider = ""
-        description = "File transfer"
-        protocols = [OBEX_UUID]
-
-        return Server.start_service(self, port, name, uuid, service_classes,
-                service_profiles, provider, description, protocols)
-
-class PBAPServer(Server):
-    def start_service(self, port = 19):
-        name = "Phonebook Access Server"
-        uuid = "796135f0-f0c5-11d8-0966-0800200c9a66"
-        service_classes = [OBEX_PBAP_CLASS]
-        service_profiles = [OBEX_PBAP_PROFILE]
-        provider = ""
-        description = ""
-        protocols = [OBEX_UUID]
-
-        return Server.start_service(self, port, name, uuid, service_classes,
-                service_profiles, provider, description, protocols)
-
-class MAPServer(Server):
-    def start_service(self, port = 4):
-        name = "SMS/MMS"
-        uuid = "bb582b40-420c-11db-b0de-0800200c9a66"
-        service_classes = [OBEX_MAP_CLASS]
-        service_profiles = [OBEX_MAP_PROFILE]
-        provider = ""
-        description = ""
-        protocols = [OBEX_UUID]
-
-        return Server.start_service(self, port, name, uuid, service_classes,
-                service_profiles, provider, description, protocols)

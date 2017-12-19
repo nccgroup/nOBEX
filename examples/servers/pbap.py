@@ -25,11 +25,14 @@ def gen_body_headers(data, csize=65500):
     return hdrs
 
 
-class PBAPServer(server.PBAPServer):
+class PBAPServer(server.Server):
     def __init__(self, address, directory):
         super(PBAPServer, self).__init__(address)
         self.directory = os.path.abspath(directory).rstrip(os.sep)
         self.cur_directory = self.directory
+
+    def start_service(self, port=19):
+        return super(PBAPServer, self).start_service("pbap", port)
 
     def get(self, socket, request):
         name = ''

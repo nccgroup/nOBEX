@@ -11,12 +11,15 @@
 import os
 from nOBEX import headers, responses, server
 
-class OPPServer(server.PushServer):
+class OPPServer(server.Server):
     """OBEX Object Push Profile Server"""
 
     def __init__(self, address, directory):
         super(OPPServer, self).__init__(address)
         self.directory = directory
+
+    def start_service(self, port=None):
+        return super(OPPServer, self).start_service("opush", port)
 
     def put(self, socket, request):
         name = b""

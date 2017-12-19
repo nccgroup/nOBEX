@@ -36,11 +36,14 @@ def gen_body_headers(data, csize=65500):
     return hdrs
 
 
-class MAPServer(server.MAPServer):
+class MAPServer(server.Server):
     def __init__(self, address, directory):
         super(MAPServer, self).__init__(address)
         self.directory = os.path.abspath(directory).rstrip(os.sep)
         self.cur_directory = self.directory
+
+    def start_service(self, port=4):
+        return super(MAPServer, self).start_service("map", port)
 
     def get(self, socket, request):
         name = ''
