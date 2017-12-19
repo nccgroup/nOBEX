@@ -70,7 +70,7 @@ class MAPServer(server.Server):
             try:
                 listing = open(path + "/mlisting.xml", 'rb')
             except IOError:
-                sys.stderr.write("failed to open listing for %s" % path)
+                sys.stderr.write("failed to open listing for %s\n" % path)
                 self._reject(socket)
                 return
             s = listing.read()
