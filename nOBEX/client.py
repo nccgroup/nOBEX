@@ -21,6 +21,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import sys
+import xml.etree.ElementTree as ET
 from nOBEX.common import OBEX_Version, OBEXError
 from nOBEX.bluez_helper import BluetoothSocket
 from nOBEX import headers
@@ -393,6 +395,41 @@ class Client:
         if not isinstance(response, responses.Success):
             raise OBEXError(response)
 
+    def listdir(self, name = "", xml=False):
+        """listdir(self, name = "")
+
+        Requests information about the contents of the directory with the
+        specified name relative to the current directory for the session.
+
+        If the name is omitted or an empty string is supplied, the contents
+        of the current directory are typically listed by the server.
+
+        If successful, the server will provide an XML folder listing.
+        If the xml argument is true, the XML listing will be returned directly.
+        Else, this function will parse the XML and return a tuple of two lists,
+        the first list being the folder names, and the second list being
+        file names.
+        """
+
+        hdrs, data = self.get(name,
+                header_list=[headers.Type(b"x-obex/folder-listing", False)])
+
+        if xml:
+            return data
+
+        tree = ET.fromstring(data)
+        folders = []
+        files = []
+        for e in tree:
+            if e.tag == "folder":
+                folders.append(e.attrib["name"])
+            elif e.tag == "file":
+                files.append(e.attrib["name"])
+            else:
+                sys.stderr.write("Unknown listing element %s\n" % e.tag)
+
+        return folders, files
+
 class BrowserClient(Client):
     """BrowserClient(Client)
 
@@ -421,24 +458,6 @@ class BrowserClient(Client):
         """
 
         hdrs, data = self.get(header_list=[headers.Type(b"x-obex/capability")])
-        return data
-
-    def listdir(self, name = ""):
-        """listdir(self, name = "")
-
-        Requests information about the contents of the directory with the
-        specified name relative to the current directory for the session.
-        Returns a an XML listing of files as a byte string.
-
-        If successful, the directory contents are returned in the form of
-        an XML document as described by the x-obex/folder-listing MIME type.
-
-        If the name is omitted or an empty string is supplied, the contents
-        of the current directory are typically listed by the server.
-        """
-
-        hdrs, data = self.get(name,
-                header_list=[headers.Type(b"x-obex/folder-listing", False)])
         return data
 
 class SyncClient(Client):

@@ -105,11 +105,9 @@ def main():
     c.setpath("msg")
 
     # dump every folder
-    dump_dir(c, "deleted", dest_dir + "telecom/msg/deleted")
-    dump_dir(c, "draft",   dest_dir + "telecom/msg/draft")
-    dump_dir(c, "inbox",   dest_dir + "telecom/msg/inbox")
-    dump_dir(c, "outbox",  dest_dir + "telecom/msg/outbox")
-    dump_dir(c, "sent",    dest_dir + "telecom/msg/sent")
+    dirs, _ = c.listdir()
+    for d in dirs:
+        dump_dir(c, d, dest_dir + "telecom/msg/" + d)
 
     c.disconnect()
     return 0
