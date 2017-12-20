@@ -10,72 +10,113 @@
 # Released under GPLv3, a full copy of which can be found in COPYING.
 #
 
-import sys, traceback
+import os, struct, sys
 from xml.etree import ElementTree
-from nOBEX import headers
+from xml.dom import minidom
+from nOBEX import headers, responses
 from nOBEX.common import OBEXError
+from nOBEX.xml_helper import parse_xml
 from clients.pbap import PBAPClient
 
+def usage():
+    sys.stderr.write("Usage: %s <device address> <dest directory> [SIM]\n" % sys.argv[0])
+
+def dump_xml(element, file_name):
+    rough_string = ElementTree.tostring(element, 'utf-8')
+    reparsed = minidom.parseString(rough_string)
+    pretty_string = reparsed.toprettyxml()
+    with open(file_name, 'w') as fd:
+        fd.write('<?xml version="1.0"?>\n<!DOCTYPE vcard-listing SYSTEM "vcard-listing.dtd">\n')
+        fd.write(pretty_string[23:]) # skip xml declaration
+
+def get_file(c, src_path, dest_path, verbose=True, folder_name=None, book=False):
+    if verbose:
+        if folder_name is not None:
+            print("Fetching %s/%s" % (folder_name, src_path))
+        else:
+            print("Fetching %s" % src_path)
+
+    if book:
+        mimetype = b'x-bt/phonebook'
+    else:
+        mimetype = b'x-bt/vcard'
+
+    hdrs, card = c.get(src_path, header_list=[headers.Type(mimetype)])
+    with open(dest_path, 'wb') as f:
+        f.write(card)
+
+def dump_dir(c, src_path, dest_path):
+    src_path = src_path.strip("/")
+
+    # since some people may still be holding back progress with Python 2, I'll support
+    # them for now and not use the Python 3 exists_ok option :(
+    try:
+        os.makedirs(dest_path)
+    except OSError as e:
+        pass
+
+    # Access the list of vcards in the directory
+    hdrs, cards = c.get(src_path, header_list=[headers.Type(b'x-bt/vcard-listing')])
+
+    # Parse the XML response to the previous request.
+    # Extract a list of file names in the directory
+    names = []
+    root = parse_xml(cards)
+    dump_xml(root, "/".join([dest_path, "listing.xml"]))
+    for card in root.findall("card"):
+        names.append(card.attrib["handle"])
+
+    c.setpath(src_path)
+
+    # get all the files
+    for name in names:
+        get_file(c, name, "/".join([dest_path, name]), folder_name=src_path)
+
+    # return to the root directory
+    depth = len([f for f in src_path.split("/") if len(f)])
+    for i in range(depth):
+        c.setpath(to_parent=True)
+
 def main(argv):
-    if not 2 <= len(argv) <= 3:
-        sys.stderr.write("Usage: %s <device address> [SIM]\n" % argv[0])
+    if not 3 <= len(argv) <= 4:
+        usage()
         return -1
-    elif len(argv) == 3:
-        if argv[2] == "SIM":
+    elif len(argv) == 4:
+        if argv[3] == "SIM":
             # If the SIM command line option was given, look in the SIM1
             # directory. Maybe the SIM2 directory exists on dual-SIM phones.
             prefix = "SIM1/"
         else:
-            sys.stderr.write("Usage: %s <device address> [SIM]\n" % argv[0])
+            usage()
             return -1
     else:
         prefix = ""
 
     device_address = argv[1]
+    dest_dir = os.path.abspath(argv[2]) + "/"
 
     c = PBAPClient(device_address)
-    try:
-        c.connect()
-    except OBEXError:
-        sys.stderr.write("Failed to connect to phone.\n")
-        traceback.print_exc()
-        return -1
+    c.connect()
 
-    # Access the list of vcards in the phone's internal phone book.
-    hdrs, cards = c.get(prefix+"telecom/pb", header_list=[headers.Type(b"x-bt/vcard-listing")])
+    # dump the phone book and other folders
+    dump_dir(c, prefix+"telecom/pb", dest_dir+prefix+"telecom/pb")
+    dump_dir(c, prefix+"telecom/ich", dest_dir+prefix+"telecom/ich")
+    dump_dir(c, prefix+"telecom/och", dest_dir+prefix+"telecom/och")
+    dump_dir(c, prefix+"telecom/mch", dest_dir+prefix+"telecom/mch")
+    dump_dir(c, prefix+"telecom/cch", dest_dir+prefix+"telecom/cch")
 
-    # Parse the XML response to the previous request.
-    root = ElementTree.fromstring(cards)
-
-    print("\nAvailable cards in %stelecom/pb\n" % prefix)
-
-    # Examine each XML element, storing the file names we find in a list, and
-    # printing out the file names and their corresponding contact names.
-    names = []
-    for card in root.findall("card"):
-        print("%s: %s" % (card.attrib["handle"], card.attrib["name"]))
-        names.append(card.attrib["handle"])
-
-    print("\nCards in %stelecom/pb\n" % prefix)
-
-    # Request all the file names obtained earlier.
-    c.setpath(prefix + "telecom/pb")
-
-    for name in names:
-        hdrs, card = c.get(name, header_list=[headers.Type(b"x-bt/vcard")])
-        print(card)
-
-    # Return to the root directory.
-    c.setpath(to_parent = True)
-    c.setpath(to_parent = True)
-    if prefix:
-        c.setpath(to_parent = True)
-
-    print("\nThe phonebook in %stelecom/pb as one vcard\n" % prefix)
-
-    hdrs, phonebook = c.get(prefix + "telecom/pb.vcf",
-                            header_list=[headers.Type(b"x-bt/phonebook")])
-    print(phonebook)
+    # dump the combined vcards
+    c.setpath(prefix + "telecom")
+    get_file(c, "pb.vcf", dest_dir+prefix+"telecom/pb.vcf",
+            folder_name=prefix+"telecom", book=True)
+    get_file(c, "ich.vcf", dest_dir+prefix+"telecom/ich.vcf",
+            folder_name=prefix+"telecom", book=True)
+    get_file(c, "och.vcf", dest_dir+prefix+"telecom/och.vcf",
+            folder_name=prefix+"telecom", book=True)
+    get_file(c, "mch.vcf", dest_dir+prefix+"telecom/mch.vcf",
+            folder_name=prefix+"telecom", book=True)
+    get_file(c, "cch.vcf", dest_dir+prefix+"telecom/cch.vcf",
+            folder_name=prefix+"telecom", book=True)
 
     c.disconnect()
     return 0

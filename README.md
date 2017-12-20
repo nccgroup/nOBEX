@@ -86,7 +86,7 @@ hcitool scan
 Clone the PBAP contents of an existing phone (use your correct MAC and a preferably empty or
 nonexistent destination directory of your choice):
 ```
-python3 examples/pbapclient-download.py 5C:51:88:8A:EC:5B ~/pbap_root/
+python3 examples/pbapclient.py 5C:51:88:8A:EC:5B ~/pbap_root/
 ```
 
 Modify the vcards and listing XMLs in the your dump destination directory as desired. Now run a
@@ -100,7 +100,7 @@ You'll also need to pair your PBAP client with the computer (PBAP server).
 ### MAP
 Pull the message data off your phone to establish a test MAP tree:
 ```
-python3 examples/mapclient-download.py 5C:51:88:8A:EC:5B ~/map_root/
+python3 examples/mapclient.py 5C:51:88:8A:EC:5B ~/map_root/
 ```
 
 Alternatively, if your phone doesn't support MAP properly, use the MAP sample data tree
