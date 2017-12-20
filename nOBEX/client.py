@@ -22,15 +22,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import sys
-import xml.etree.ElementTree as ET
 from nOBEX.common import OBEX_Version, OBEXError
 from nOBEX.bluez_helper import BluetoothSocket
 from nOBEX import headers
 from nOBEX import requests
 from nOBEX import responses
+from nOBEX.xml_helper import parse_xml
 
-
-class Client:
+class Client(object):
     """Client
 
     client = Client(address, port)
@@ -417,7 +416,7 @@ class Client:
         if xml:
             return data
 
-        tree = ET.fromstring(data)
+        tree = parse_xml(data)
         folders = []
         files = []
         for e in tree:
@@ -429,41 +428,3 @@ class Client:
                 sys.stderr.write("Unknown listing element %s\n" % e.tag)
 
         return folders, files
-
-class BrowserClient(Client):
-    """BrowserClient(Client)
-
-    client = BrowserClient(address, port)
-
-    Provides an OBEX client that can be used to browse directories on a
-    server via a folder-browsing service.
-
-    The address used is a standard six-field bluetooth address, and the port
-    should correspond to the port providing the folder-browsing service.
-
-    To determine the correct port, examine the advertised services for a
-    device by calling the nOBEX.bluez_helper.find_service() function with the
-    service name and address of the device as arguments.
-    """
-
-    def connect(self):
-        uuid = b"\xF9\xEC\x7B\xC4\x95\x3C\x11\xd2\x98\x4E\x52\x54\x00\xDC\x9E\x09"
-        Client.connect(self, header_list = [headers.Target(uuid)])
-
-    def capability(self):
-        """capability(self)
-
-        Returns a capability object from the server. An exception will pass
-        through if there is an error.
-        """
-
-        hdrs, data = self.get(header_list=[headers.Type(b"x-obex/capability")])
-        return data
-
-class SyncClient(Client):
-    def connect(self, header_list = (headers.Target(b"IRMC-SYNC"),)):
-        Client.connect(self, header_list)
-
-class SyncMLClient(Client):
-    def connect(self, header_list = (headers.Target(b"SYNCML-SYNC"),)):
-        Client.connect(self, header_list)

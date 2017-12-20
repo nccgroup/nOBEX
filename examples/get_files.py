@@ -12,26 +12,23 @@
 
 import os, sys, traceback
 from xml.etree import ElementTree
-from nOBEX import client, responses
-from nOBEX.bluez_helper import find_service
+from clients.ftp import FTPClient
 
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        sys.stderr.write("Usage: %s <device address> <directory>\n" % sys.argv[0])
-        sys.exit(1)
+def main(argv):
+    if len(argv) != 3:
+        sys.stderr.write("Usage: %s <device address> <directory>\n" % argv[0])
+        return -1
 
-    device_address = sys.argv[1]
-    path = sys.argv[2]
+    device_address = argv[1]
+    path = argv[2]
 
-    port = find_service("ftp", device_address)
-    c = client.BrowserClient(device_address, port)
-
+    c = FTPClient(device_address)
     try:
         c.connect()
     except:
         sys.stderr.write("Failed to connect.\n")
         traceback.print_exc()
-        sys.exit(1)
+        return -1
 
     pieces = path.split("/")
 
@@ -41,7 +38,7 @@ if __name__ == "__main__":
         except:
             sys.stderr.write("Failed to enter directory.\n")
             traceback.print_exc()
-            sys.exit(1)
+            return -1
 
     sys.stdout.write("Entered directory: %s\n" % path)
 
@@ -50,7 +47,7 @@ if __name__ == "__main__":
     except:
         sys.stderr.write("Failed to list directory.\n")
         traceback.print_exc()
-        sys.exit(1)
+        return -1
 
     tree = ElementTree.fromstring(data)
     for element in tree.findall("file"):
@@ -71,3 +68,6 @@ if __name__ == "__main__":
 
     c.disconnect()
     sys.exit()
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

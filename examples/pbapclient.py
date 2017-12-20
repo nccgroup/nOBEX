@@ -10,40 +10,36 @@
 # Released under GPLv3, a full copy of which can be found in COPYING.
 #
 
-import os, struct, sys, traceback
+import sys, traceback
 from xml.etree import ElementTree
-from nOBEX import client, headers, responses
+from nOBEX import headers
 from nOBEX.common import OBEXError
-from nOBEX.bluez_helper import find_service
+from clients.pbap import PBAPClient
 
-if __name__ == "__main__":
-    if not 2 <= len(sys.argv) <= 3:
-        sys.stderr.write("Usage: %s <device address> [SIM]\n" % sys.argv[0])
-        sys.exit(1)
-    elif len(sys.argv) == 3:
-        if sys.argv[2] == "SIM":
+def main(argv):
+    if not 2 <= len(argv) <= 3:
+        sys.stderr.write("Usage: %s <device address> [SIM]\n" % argv[0])
+        return -1
+    elif len(argv) == 3:
+        if argv[2] == "SIM":
             # If the SIM command line option was given, look in the SIM1
             # directory. Maybe the SIM2 directory exists on dual-SIM phones.
             prefix = "SIM1/"
         else:
-            sys.stderr.write("Usage: %s <device address> [SIM]\n" % sys.argv[0])
-            sys.exit(1)
+            sys.stderr.write("Usage: %s <device address> [SIM]\n" % argv[0])
+            return -1
     else:
         prefix = ""
 
-    device_address = sys.argv[1]
+    device_address = argv[1]
 
-    port = find_service("pbap", device_address)
-
-    # Use the generic Client class to connect to the phone.
-    c = client.Client(device_address, port)
-    uuid = b"\x79\x61\x35\xf0\xf0\xc5\x11\xd8\x09\x66\x08\x00\x20\x0c\x9a\x66"
+    c = PBAPClient(device_address)
     try:
-        c.connect(header_list=[headers.Target(uuid)])
+        c.connect()
     except OBEXError:
         sys.stderr.write("Failed to connect to phone.\n")
         traceback.print_exc()
-        sys.exit(1)
+        return -1
 
     # Access the list of vcards in the phone's internal phone book.
     hdrs, cards = c.get(prefix+"telecom/pb", header_list=[headers.Type(b"x-bt/vcard-listing")])
@@ -82,5 +78,7 @@ if __name__ == "__main__":
     print(phonebook)
 
     c.disconnect()
+    return 0
 
-    sys.exit()
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

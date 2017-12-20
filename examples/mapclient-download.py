@@ -10,34 +10,18 @@
 # Released under GPLv3, a full copy of which can be found in COPYING.
 #
 
-import os, struct, sys
+import os, sys
 from xml.etree import ElementTree
-from nOBEX import client, headers, responses
+from nOBEX import headers
 from nOBEX.common import OBEXError
-from nOBEX.bluez_helper import find_service
+from nOBEX.xml_helper import parse_xml
+from clients.map import MAPClient
 
 def dump_xml(element, file_name):
     fd = open(file_name, 'wb')
     fd.write(b'<?xml version="1.0" encoding="utf-8" standalone="yes" ?>\n')
     fd.write(ElementTree.tostring(element, 'utf-8'))
     fd.close()
-
-def escape_ampersands(s):
-    # Terrible hack to work around Python getting mad at things like
-    # <foo goo="Moo & Roo" />
-    us = str(s, encoding='utf-8')
-    us2 = '&amp;'.join(us.split('&'))
-    return bytes(us2, encoding='utf-8')
-
-def connect(device_address):
-    port = find_service("map", device_address)
-
-    # Use the generic Client class to connect to the phone.
-    c = client.Client(device_address, port)
-    uuid = b'\xbb\x58\x2b\x40\x42\x0c\x11\xdb\xb0\xde\x08\x00\x20\x0c\x9a\x66'
-    c.connect(header_list=[headers.Target(uuid)])
-
-    return c
 
 def get_file(c, src_path, dest_path, verbose=True, folder_name=None):
     if verbose:
@@ -73,10 +57,7 @@ def dump_dir(c, src_path, dest_path):
     # Parse the XML response to the previous request.
     # Extract a list of file names in the directory
     names = []
-    try:
-        root = ElementTree.fromstring(cards)
-    except ElementTree.ParseError:
-        root = ElementTree.fromstring(escape_ampersands(cards))
+    root = parse_xml(cards)
     dump_xml(root, "/".join([dest_path, "mlisting.xml"]))
     for card in root.findall("msg"):
         names.append(card.attrib["handle"])
@@ -100,7 +81,8 @@ def main():
     device_address = sys.argv[1]
     dest_dir = os.path.abspath(sys.argv[2]) + "/"
 
-    c = connect(device_address)
+    c = MAPClient(device_address)
+    c.connect()
     c.setpath("telecom")
     c.setpath("msg")
 

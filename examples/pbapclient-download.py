@@ -13,39 +13,21 @@
 import os, struct, sys
 from xml.etree import ElementTree
 from xml.dom import minidom
-from nOBEX import client, headers, responses
+from nOBEX import headers, responses
 from nOBEX.common import OBEXError
-from nOBEX.bluez_helper import find_service
+from nOBEX.xml_helper import parse_xml
+from clients.pbap import PBAPClient
 
 def usage():
     sys.stderr.write("Usage: %s <device address> <dest directory> [SIM]\n" % sys.argv[0])
-    sys.exit(1)
 
 def dump_xml(element, file_name):
-    fd = open(file_name, 'w')
-    fd.write('<?xml version="1.0"?>\n<!DOCTYPE vcard-listing SYSTEM "vcard-listing.dtd">\n')
     rough_string = ElementTree.tostring(element, 'utf-8')
     reparsed = minidom.parseString(rough_string)
     pretty_string = reparsed.toprettyxml()
-    fd.write(pretty_string[23:]) # skip xml declaration
-    fd.close()
-
-def escape_ampersands(s):
-    # Terrible hack to work around Python getting mad at things like
-    # <foo goo="Moo & Roo" />
-    us = str(s, encoding='utf-8')
-    us2 = '&amp;'.join(us.split('&'))
-    return bytes(us2, encoding='utf-8')
-
-def connect(device_address):
-    port = find_service("pbap", device_address)
-
-    # Use the generic Client class to connect to the phone.
-    c = client.Client(device_address, port)
-    uuid = b'\x79\x61\x35\xf0\xf0\xc5\x11\xd8\x09\x66\x08\x00\x20\x0c\x9a\x66'
-    c.connect(header_list=[headers.Target(uuid)])
-
-    return c
+    with open(file_name, 'w') as fd:
+        fd.write('<?xml version="1.0"?>\n<!DOCTYPE vcard-listing SYSTEM "vcard-listing.dtd">\n')
+        fd.write(pretty_string[23:]) # skip xml declaration
 
 def get_file(c, src_path, dest_path, verbose=True, folder_name=None, book=False):
     if verbose:
@@ -79,10 +61,7 @@ def dump_dir(c, src_path, dest_path):
     # Parse the XML response to the previous request.
     # Extract a list of file names in the directory
     names = []
-    try:
-        root = ElementTree.fromstring(cards)
-    except ElementTree.ParseError:
-        root = ElementTree.fromstring(escape_ampersands(cards))
+    root = parse_xml(cards)
     dump_xml(root, "/".join([dest_path, "listing.xml"]))
     for card in root.findall("card"):
         names.append(card.attrib["handle"])
@@ -98,23 +77,26 @@ def dump_dir(c, src_path, dest_path):
     for i in range(depth):
         c.setpath(to_parent=True)
 
-def main():
-    if not 3 <= len(sys.argv) <= 4:
+def main(argv):
+    if not 3 <= len(argv) <= 4:
         usage()
-    elif len(sys.argv) == 4:
-        if sys.argv[3] == "SIM":
+        return -1
+    elif len(argv) == 4:
+        if argv[3] == "SIM":
             # If the SIM command line option was given, look in the SIM1
             # directory. Maybe the SIM2 directory exists on dual-SIM phones.
             prefix = "SIM1/"
         else:
             usage()
+            return -1
     else:
         prefix = ""
 
-    device_address = sys.argv[1]
-    dest_dir = os.path.abspath(sys.argv[2]) + "/"
+    device_address = argv[1]
+    dest_dir = os.path.abspath(argv[2]) + "/"
 
-    c = connect(device_address)
+    c = PBAPClient(device_address)
+    c.connect()
 
     # dump the phone book and other folders
     dump_dir(c, prefix+"telecom/pb", dest_dir+prefix+"telecom/pb")
@@ -140,4 +122,4 @@ def main():
     return 0
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(sys.argv))
