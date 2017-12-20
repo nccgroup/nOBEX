@@ -62,14 +62,13 @@ class Precondition_Failed(FailureResponse):
     code = OBEX_Precondition_Failed = 0xCC
 
 class UnknownResponse(Response):
-    def __init__(self, code, length, data):
+    def __init__(self, code, data):
         self.code = code
-        self.length = length
         self.data = data[3:]
 
     def __repr__(self):
-        return "%s(code=0x%02X, length=%i, data=%s" % (
-                type(self).__name__, self.code, self.length, repr(self.data))
+        return "%s(code=0x%02X, data=%s" % (
+                type(self).__name__, self.code, repr(self.data))
 
 
 class ResponseHandler(MessageHandler):
@@ -86,14 +85,14 @@ class ResponseHandler(MessageHandler):
     UnknownMessageClass = UnknownResponse
 
     def decode_connection(self, socket):
-        code, length, data = self._read_packet(socket)
+        code, data = self._read_packet(socket)
 
         if code == ConnectSuccess.code:
-            message = ConnectSuccess()
+            message = ConnectSuccess(data)
         elif code in self.message_dict:
-            message = self.message_dict[code]()
+            message = self.message_dict[code](data)
         else:
-            return self.UnknownMessageClass(code, length, data)
+            return self.UnknownMessageClass(code, data)
 
         obex_version, flags, max_packet_length = struct.unpack(">BBH", data[3:7])
 

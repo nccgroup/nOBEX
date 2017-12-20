@@ -44,7 +44,7 @@ class OBEX_Version:
         return (self.major, self.minor) > (other.major, other.minor)
 
 
-class Message:
+class Message(object):
     format = ">BH"
 
     def __init__(self, data = (), header_data = ()):
@@ -54,6 +54,9 @@ class Message:
 
     def length(self, format):
         return format.count("B") + format.count("H") * 2
+
+    def __repr__(self):
+        return "%s(data=%s)" % (type(self).__name__, repr(self.data))
 
     def read_data(self, data):
         # Extract the header data from the complete data.
@@ -153,13 +156,13 @@ class MessageHandler:
             read_len = 32767 if body_len > 32767 else body_len
             data += socket_.recv(read_len, socket.MSG_WAITALL)
             body_len -= read_len
-        return type, length, data
+        return type, data
 
     def decode(self, socket_):
-        code, length, data = self._read_packet(socket_)
+        code, data = self._read_packet(socket_)
         if code in self.message_dict:
             message = self.message_dict[code]()
             message.read_data(data)
             return message
         else:
-            return self.UnknownMessageClass(code, length, data)
+            return self.UnknownMessageClass(code, data)

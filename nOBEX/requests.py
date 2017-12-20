@@ -96,9 +96,8 @@ class Abort(Request):
     format = ""
 
 class UnknownRequest(Request):
-    def __init__(self, code, length, data):
+    def __init__(self, code, data):
         self.code = code
-        self.length = length
         self.data = data[3:]
 
 class RequestHandler(MessageHandler):
