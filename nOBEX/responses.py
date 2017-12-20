@@ -78,6 +78,7 @@ class ResponseHandler(MessageHandler):
             Success.code: Success,
             Bad_Request.code: Bad_Request,
             Unauthorized.code: Unauthorized,
+            Forbidden.code: Forbidden,
             Not_Found.code: Not_Found,
             Precondition_Failed.code: Precondition_Failed
     }
