@@ -56,15 +56,19 @@ def get_file(c, src_path, dest_path, verbose=True, folder_name=None):
 def dump_dir(c, src_path, dest_path):
     src_path = src_path.strip("/")
 
+    # Access the list of vcards in the directory
+    hdrs, cards = c.get(src_path, header_list=[headers.Type(b'x-bt/MAP-msg-listing')])
+
+    # folder doesn't exist, iPhone behaves this way
+    if len(cards) == 0:
+        return
+
     # since some people may still be holding back progress with Python 2, I'll support
     # them for now and not use the Python 3 exists_ok option :(
     try:
         os.makedirs(dest_path)
-    except OSError as e:
+    except OSError:
         pass
-
-    # Access the list of vcards in the directory
-    hdrs, cards = c.get(src_path, header_list=[headers.Type(b'x-bt/MAP-msg-listing')])
 
     # Parse the XML response to the previous request.
     # Extract a list of file names in the directory
