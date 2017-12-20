@@ -49,7 +49,7 @@ def dump_dir(c, src_path, dest_path):
     src_path = src_path.strip("/")
 
     # since some people may still be holding back progress with Python 2, I'll support
-    # them for now and not use the Python 3 exists_ok option :(
+    # them for now and not use the Python 3 exist_ok option :(
     try:
         os.makedirs(dest_path)
     except OSError as e:
