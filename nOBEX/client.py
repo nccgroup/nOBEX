@@ -21,7 +21,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from nOBEX.common import OBEX_Version
+from nOBEX.common import OBEX_Version, OBEXError
 from nOBEX.bluez_helper import BluetoothSocket
 from nOBEX import headers
 from nOBEX import requests
