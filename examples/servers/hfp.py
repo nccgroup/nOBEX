@@ -10,8 +10,7 @@
 #
 
 import re, socket, time
-from nOBEX import server, common
-from nOBEX.bluez_helper import find_service
+from nOBEX import server, bluez_helper
 
 error_resp = b'ERROR'
 
@@ -79,7 +78,10 @@ class HFPServer(server.Server):
         if beast_file: self._load_beast(beast_file)
 
     def start_service(self, port=3):
-        return super(HFPServer, self).start_service("hfag", port)
+        # we don't actually listen on a socket for HFP
+        bluez_helper.advertise_service("hfag", port)
+        print("Advertising HFP on port %i" % port)
+        return None
 
     def _load_beast(self, beast_file):
         lines = open(beast_file, 'rb').readlines()
@@ -90,22 +92,27 @@ class HFPServer(server.Server):
         print(self.resp_dict)
 
     @staticmethod
-    def _connect_hfp(address, control_chan=True, audio_chan=True):
+    def _connect_hfp(address, port=None, control_chan=True, audio_chan=True):
         connection = None
 
         # Connect to RFCOMM control channel on HF (car kit)
         if control_chan:
-            port = find_service("hf", address)
+            if port is None:
+                port = bluez_helper.find_service("hf", address)
             print("HFP connecting to %s on port %i" % (address, port))
-            connection = common.Socket()
+            connection = bluez_helper.BluetoothSocket()
             time.sleep(0.5)
             connection.connect((address, port))
 
         if audio_chan and hasattr(socket, "BTPROTO_SCO"):
             asock = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_SEQPACKET, socket.BTPROTO_SCO)
             time.sleep(0.5)
-            asock.connect(bytes(address, encoding="UTF-8"))
-            print("HFP SCO audio socket established")
+            try:
+                asock.connect(bytes(address, encoding="UTF-8"))
+            except ConnectionRefusedError:
+                print("Connection refused for audio socket")
+            else:
+                print("HFP SCO audio socket established")
 
         return connection
 
@@ -113,29 +120,45 @@ class HFPServer(server.Server):
         """
         This works a little differently from a normal server:
         1. We tell the car that we support HFP over SDP
-        2. We wait for the car to connect to us to get its MAC address
-           the connection the car makes is not suitable for AT commands, even
-           though the car tries to send us AT commands over it. Any replies we
-           send to the car over RFCOMM are lost.
-        3. We query the car's MAC address over SDP for HFP (111e). Be aware that
-           some cars (like my Ford Focus) will refuse to list all services they
-           offer over SDP. However, you will receive a reply if you query for HFP
-           specifically. We will get the channel number to connect to over SDP.
-        4. We initiate an RFCOMM connection to the car on the correct port for it.
+        2. We look through the listing of paired devices to find a head unit that
+           that supports HFP HF mode.
+        3. Our HFP AG "server" initiates a connection to the HFP HF "client" that's
+           listening on a port. In other words, the "client" is an RFCOMM server.
+
+        While many vehicles do try initiating connections to the HFP AG, these
+        vehicle-initiated connections sometimes don't work (eg. on Ford Sync Gen 1).
+        They do work on other head units (eg. BMW iDrive CIC-HIGH). Some head units
+        never try to initate connections themselves (eg. Porsche PCM). This alternate
+        approach of the AG connecting to the HF seems to work on most (but not all)
+        head units.
         """
         while True:
-            connection, address = socket.accept()
-            connection.close()
-            connection = self._connect_hfp(address)
+            devs = bluez_helper.list_paired_devices()
+            for address in devs:
+                try:
+                    port = bluez_helper.find_service("hf", address)
+                except bluez_helper.SDPException:
+                    continue
+                print("HFP HF found on port %i of %s" % (port, address))
+                connection = self._connect_hfp(address, port)
 
-            self.connected = True
-            while self.connected:
-                request = self.request_handler.decode(connection)
-                self.process_request(connection, request)
+                self.connected = True
+                while self.connected:
+                    request = self.request_handler.decode(connection)
+                    self.process_request(connection, request)
 
     def process_request(self, sock, cmd):
         print("received AT cmd: %s" % cmd)
         cmd = cmd.strip()
+
+        # We connected to wrong device or at wrong time, need to re-connect
+        if len(cmd) == 0:
+            return
+        elif cmd == b'ERROR':
+            print("Peer reports AT ERROR, wants reconnect. Be patient.")
+            self.connected = False
+            return
+
         if cmd in self.resp_dict:
             print("known command, resp: %s" % repr(self.resp_dict[cmd]))
             self._reply(sock, self.resp_dict[cmd])

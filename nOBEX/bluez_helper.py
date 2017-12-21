@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import atexit, socket, subprocess, sys
+import atexit, os, socket, subprocess, sys
 import xml.etree.ElementTree as ET
 
 def BluetoothSocket():
@@ -140,3 +140,18 @@ def _find_attr(xml_tree, attr_id):
         if elem.tag == "attribute" and elem.attrib["id"] == attr_id:
             return elem
     raise SDPException("Attribute %s not found!" % attr_id)
+
+def list_paired_devices():
+    devs = set()
+
+    # requires root access
+    rpath = "/var/lib/bluetooth"
+    adapters = os.listdir(rpath)
+    for a in adapters:
+        adapter_devs = os.listdir(os.path.join(rpath, a))
+        for d in adapter_devs:
+            if d[2] != ":":
+                continue
+            devs.add(d)
+
+    return devs
