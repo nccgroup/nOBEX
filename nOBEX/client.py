@@ -424,6 +424,8 @@ class Client(object):
                 folders.append(e.attrib["name"])
             elif e.tag == "file":
                 files.append(e.attrib["name"])
+            elif e.tag == "parent-folder":
+                pass # ignore it
             else:
                 sys.stderr.write("Unknown listing element %s\n" % e.tag)
 
