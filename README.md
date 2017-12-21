@@ -116,21 +116,51 @@ sudo python3 examples/multiserver.py --map ~/map_root/
 The HFP server (audio gateway) is fairly basic, sending back preconfigured replies to select
 commands. The server is set up to support common HFP commands out of the box, but every vehicle
 will likely require a few additional commands and/or changes to responses. Custom responses can be
-configured through a format of a command and response pairs on each line, command and response
-being separated by a tab. Sample config files can be found in the examples/bbeast folder.
+configured through a text file with a format of command and response pairs on each line, command
+and response being separated by a tab. Sample config files can be found in the examples/bbeast folder.
 
-To run a standalone HFP server (config file is optional):
+Unlike the other servers, the nOBEX HFP AG implementation doesn't actually accept RFCOMM
+connections. The HFP standard is ambiguous on how connections should be established, and
+thus both the HF and AG are allowed to both accept and initiate connections. Different
+head units behave differently when it comes to connection establishment practices. However,
+most HF devices tend to accept being connected to by the AG if the AG does not accept
+connections on its own port. Thus, the nOBEX HFP AG "server" just searches through paired
+devices for ones that support the HF service, and nOBEX then connects to the HF device.
+
+Be aware that the HFP AG code will try connecting to any device listed under
+`/var/lib/bluetooth/*/*` that claims to support the HFP HF role. Thus, you should
+delete any erroneous pairings in that directory before trying to use the HFP server.
+
+To run a standalone HFP AG (config file is optional):
 ```
 sudo python3 examples/multiserver.py --hfp [config_file]
 ```
 
 ### FTP
+The FTP (File Transfer Profile) client allows you to browse files on an OBEX FTP server,
+such as another computer running nOBEX, or an Android phone running the
+[Bluetooth File Transfer](https://play.google.com/store/apps/details?id=it.medieval.blueftp&hl=en)
+app. There is an FTP client sample program located in the examples directory.
+```
+python3 examples/ftpclient.py SERVER_MAC_ADDRESS [save_directory]
+```
+
+Running the example FTP client with only a Bluetooth MAC address as the argument will print
+out a recursive directory listing of all files accessible over OBEX FTP on the server. If the
+optional `save_directory` argument is provided, the script will download every file that is
+accessible on the server and save it to the specified save directory on your computer.
+
 The FTP server allows a client to browse files on your computer (server) inside a specified folder.
 ```
 sudo python3 examples/multiserver.py --ftp PATH_TO_FTP_FOLDER
 ```
 
 ### OPP
+The OPP (Object Push Profile) client allows pushing a file on your computer to an OBEX OPP server.
+```
+python3 examples/pushclient.py SERVER_MAC_ADDRESS FILE_TO_PUSH
+```
+
 The OPP server allows a client to push files to your computer (server) inside a specified folder.
 ```
 sudo python3 examples/multiserver.py --opp PATH_TO_OPP_FOLDER
