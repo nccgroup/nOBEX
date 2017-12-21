@@ -34,9 +34,9 @@ def dump_recurse(client, path, save_path=None):
 
     # pull all the files in the current directory
     for f in files:
-        _, data = client.get(f)
         print("\t"*offset + f)
         if save_path:
+            _, data = client.get(f)
             fpath = "/".join([save_path, path, f])
             with open(fpath, "wb") as fd:
                 fd.write(data)
