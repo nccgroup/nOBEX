@@ -44,7 +44,11 @@ default_beast_table = {
     b'AT+CSCS?': b'+CSCS: "8859-1"',
     b'AT+CGMI': b'+CGMI: NCC Group',
     b'AT+CGMM': b'+CGMM: nOBEX',
-    b'AT+CGMR': b'+CGMR: 0'
+    b'AT+CGMR': b'+CGMR: 0',
+    b'AT+CGSN': b'+CGSN: 012345678901237',
+    b'AT+CREG?': b'+CREG: 5,4',
+    b'AT+CSQ': b'+CSQ: 20,2',
+    b'AT+CBC': b'+CBC: 0,0'
 }
 
 # for commands that could end with multiple values, but same response applies
@@ -55,7 +59,8 @@ regex_beast_table = {
     b'AT\+CSCS=".*"': None,
     b'AT\+VGS=[0-9]+': None,
     b'AT\+VGM=[0-9]+': None,
-    b'AT\+BAC=[0-9].*': None
+    b'AT\+BAC=[0-9].*': None,
+    b'AT\+CREG=[0-9]+': None
 }
 
 class HFPMessageHandler(object):
