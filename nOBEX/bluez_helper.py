@@ -130,6 +130,15 @@ def _search_record(name, bdaddr):
     except ET.ParseError:
         raise SDPException("Error parsing XML SDP record")
 
+    # Workaround to HF AG (0x111f) also containing HF (0x111e) class
+    if name.upper() == "HF":
+        serv_classes = set()
+        sc_attr = _find_attr(tree, "0x0001")[0]
+        for c_elem in sc_attr.findall("uuid"):
+            serv_classes.add(int(c_elem.attrib["value"], 16))
+        if 0x111f in serv_classes:
+            raise SDPException("HF on %s is HFAG" % bdaddr)
+
     # this code is probably fragile
     handle = _find_attr(tree, "0x0000")[0].attrib["value"]
     channel = int(_find_attr(tree, "0x0004")[0][1][1].attrib["value"], 16)
