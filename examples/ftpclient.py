@@ -14,19 +14,19 @@ import os, sys, traceback
 from xml.etree import ElementTree
 from clients.ftp import FTPClient
 
+def _pjoin(paths):
+    return "/".join(paths)
+
 def dump_recurse(client, path, save_path=None):
-    split_path = path.split("/")
-    if len(path) == 0:
-        offset = 0
-    else:
-        offset = len(split_path)
-        client.setpath(split_path[-1])
+    offset = len(path)
+    if len(path) > 0:
+        client.setpath(path[-1])
 
     # since some people may still be holding back progress with Python 2, I'll support
     # them for now and not use the Python 3 exist_ok option :(
     if save_path:
         try:
-            os.makedirs(save_path + "/" + path)
+            os.makedirs(save_path + "/" + _pjoin(path))
         except OSError as e:
             pass
 
@@ -37,14 +37,14 @@ def dump_recurse(client, path, save_path=None):
         print("\t"*offset + f)
         if save_path:
             _, data = client.get(f)
-            fpath = "/".join([save_path, path, f])
+            fpath = _pjoin([save_path, _pjoin(path), f])
             with open(fpath, "wb") as fd:
                 fd.write(data)
 
     # now recursively pull all the directories
     for d in dirs:
         print("\t"*offset + "> " + d)
-        new_path = path + "/" + d
+        new_path = path + (d,)
         dump_recurse(client, new_path, save_path)
 
     if len(path) > 0:
@@ -64,7 +64,7 @@ def main(argv):
     c = FTPClient(device_address)
     c.connect()
 
-    dump_recurse(c, "", save_path)
+    dump_recurse(c, (), save_path)
 
     c.disconnect()
     return 0
