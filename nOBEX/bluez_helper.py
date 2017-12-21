@@ -117,10 +117,18 @@ def _search_record(name, bdaddr):
 
     # Strip out first line that's not XML
     xml_str = b'\n'.join(val.stdout.splitlines()[1:])
+
+    serv_count = xml_str.count(b'<record>')
+    if serv_count < 1:
+        raise SDPException("Service %s not found on %s" % (name, bdaddr))
+    elif serv_count > 1:
+        # take just the first occurance
+        xml_str = xml_str[:xml_str.index(b'</record>') + 9]
+
     try:
         tree = ET.fromstring(xml_str)
     except ET.ParseError:
-        raise SDPException("Service %s not found on %s" % (name, bdaddr))
+        raise SDPException("Error parsing XML SDP record")
 
     # this code is probably fragile
     handle = _find_attr(tree, "0x0000")[0].attrib["value"]
