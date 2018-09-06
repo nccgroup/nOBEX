@@ -70,7 +70,11 @@ def dump_dir(c, src_path, dest_path):
 
     # get all the files
     for name in names:
-        get_file(c, name, "/".join([dest_path, name]), folder_name=src_path)
+        fname = "/".join([dest_path, name])
+        try:
+            get_file(c, name, fname, folder_name=src_path)
+        except OBEXError as e:
+            print("Failed to fetch", fname, e)
 
     # return to the root directory
     depth = len([f for f in src_path.split("/") if len(f)])
