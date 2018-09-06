@@ -58,6 +58,10 @@ def dump_dir(c, src_path, dest_path):
     # Access the list of vcards in the directory
     hdrs, cards = c.get(src_path, header_list=[headers.Type(b'x-bt/vcard-listing')])
 
+    if len(cards) == 0:
+        print("WARNING: %s is empty, skipping", src_path)
+        return
+
     # Parse the XML response to the previous request.
     # Extract a list of file names in the directory
     names = []
