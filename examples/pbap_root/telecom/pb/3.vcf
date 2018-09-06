@@ -1,0 +1,10 @@
+BEGIN:VCARD
+VERSION:2.1
+N:Trump;Donald;;;
+FN:Donald Trump
+TEL;CELL:9991234567
+ADR;HOME:;;123 White House, Washington, DC;;;;
+ORG:United States
+TITLE:President
+NOTE:This is a note
+END:VCARD

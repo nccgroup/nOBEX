@@ -1,0 +1,30 @@
+BEGIN:VCARD
+VERSION:2.1
+FN:My name
+N:My name
+TEL;CELL:12267654321
+END:VCARD
+BEGIN:VCARD
+VERSION:2.1
+N:Uncle;Bob;;;
+FN:Bob Uncle
+TEL;CELL:9876543210
+EMAIL;HOME:bobs@your.uncle
+END:VCARD
+BEGIN:VCARD
+VERSION:2.1
+N:Thief;Rob;;;
+FN:Rob Thief
+TEL;WORK:9764581234
+EMAIL;HOME:criminal@haxx.lol
+END:VCARD
+BEGIN:VCARD
+VERSION:2.1
+N:Trump;Donald;;;
+FN:Donald Trump
+TEL;CELL:9991234567
+ADR;HOME:;;123 White House, Washington, DC;;;;
+ORG:United States
+TITLE:President
+NOTE:This is a note
+END:VCARD

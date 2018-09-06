@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!DOCTYPE vcard-listing SYSTEM "vcard-listing.dtd">
+<vCard-listing version="1.0">
+	<card handle="0.vcf" name="My name"/>
+	<card handle="1.vcf" name="Bob Uncle"/>
+	<card handle="2.vcf" name="Rob Thief"/>
+	<card handle="3.vcf" name="Donald Trump"/>
+</vCard-listing>

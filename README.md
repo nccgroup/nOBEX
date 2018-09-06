@@ -89,7 +89,9 @@ nonexistent destination directory of your choice):
 python3 examples/pbapclient.py 5C:51:88:8A:EC:5B ~/pbap_root/
 ```
 
-Modify the vcards and listing XMLs in the your dump destination directory as desired. Now run a
+Alternatively, use the PBAP sample data tree located in the `examples/pbap_root` folder.
+
+Modify the vcards and listing XMLs in the your PBAP dump directory as desired. Now run a
 PBAP server using the cloned phone book:
 ```
 sudo python3 examples/multiserver.py --pbap ~/pbap_root/
