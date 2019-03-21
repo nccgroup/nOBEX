@@ -9,7 +9,7 @@
 # Released under GPLv3, a full copy of which can be found in COPYING.
 #
 
-import re, socket, time
+import re, socket, threading, time
 from nOBEX import server, bluez_helper
 
 error_resp = b'ERROR'
@@ -81,6 +81,10 @@ class HFPServer(server.Server):
         self.request_handler = HFPMessageHandler()
         self.resp_dict = default_beast_table
         if beast_file: self._load_beast(beast_file)
+        self.conn = None
+        self.write_lock = threading.Lock()
+        self.commander = ATCommander(self.external_sock_send)
+        self.commander.start()
 
     def start_service(self, port=3):
         # we don't actually listen on a socket for HFP
@@ -140,17 +144,28 @@ class HFPServer(server.Server):
         while True:
             devs = bluez_helper.list_paired_devices()
             for address in devs:
+                print("hfp trying", address)
                 try:
                     port = bluez_helper.find_service("hf", address)
                 except bluez_helper.SDPException:
                     continue
                 print("HFP HF found on port %i of %s" % (port, address))
                 connection = self._connect_hfp(address, port)
+                self.conn = connection
 
                 self.connected = True
                 while self.connected:
                     request = self.request_handler.decode(connection)
-                    self.process_request(connection, request)
+                    self.commander.sock_notify(request)
+                    with self.write_lock:
+                        self.process_request(connection, request)
+                self.conn = None
+
+    def external_sock_send(self, msg):
+        if self.conn is None:
+            return
+        with self.write_lock:
+            self._reply(self.conn, msg, False)
 
     def process_request(self, sock, cmd):
         print("received AT cmd: %s" % cmd)
@@ -179,11 +194,61 @@ class HFPServer(server.Server):
                 print("new command, no response (just OK)")
                 self._reply(sock, None)
 
-    def _reply(self, sock, resp):
+    def _reply(self, sock, resp, ok=True):
         try:
+            msg = b''
             if resp is not None:
-                sock.sendall(b'\r\n' + resp + b'\r\n')
-            if resp != error_resp:
-                sock.sendall(b'\r\nOK\r\n')
-        except:
+                msg += b'\r\n' + resp + b'\r\n'
+            if ok and resp != error_resp:
+                msg += b'\r\nOK\r\n'
+            sock.sendall(msg)
+        except BaseException as e:
             print("failure writing AT cmd response")
+
+class ATCommander(threading.Thread):
+    def __init__(self, write_cback):
+        super(ATCommander, self).__init__(daemon=True)
+        self._sock = socket.socket()
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self._sock.bind(('127.0.0.1', 7137))
+        self._conn = None
+        self._conn_lock = threading.Lock()
+        self.wcb = write_cback
+
+    def run(self):
+        self._sock.listen(0)
+        while True:
+            self._conn = None
+            self._conn, _ = self._sock.accept()
+            conn_file = self._conn.makefile('rb')
+
+            try:
+                while True:
+                    self.process_cmd(conn_file.readline().strip())
+            except IOError as e:
+                print(e) # handle connection close
+
+    def process_cmd(self, cmd):
+        if cmd.startswith(b'send'):
+            self.wcb(cmd[5:])
+        elif cmd.startswith(b'ursp'): # update auto response
+            """syntax: ursp AT_CMD AT_RSP
+            example: ursp AT+CLCC +CLCC: 1,1,4,0,0,"1234567890",129
+            for simplicity, this syntax assumes every AT command received has no spaces
+            the response can have spaces
+            this is a reasonable assumption, though might not always work"""
+            try:
+                atcmd = cmd.split(b' ')[1]
+                atrsp = cmd[5 + len(atcmd) + 1:]
+                default_beast_table[atcmd] = atrsp
+            except:
+                with self._conn_lock:
+                    self._conn.sendall(b'syntax error!\n')
+        else:
+            with self._conn_lock:
+                self._conn.sendall(b'unknown command!\n')
+
+    def sock_notify(self, msg):
+        if self._conn is not None:
+            with self._conn_lock:
+                self._conn.sendall(b'recvd ' + msg + b'\n')
