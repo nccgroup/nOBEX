@@ -10,24 +10,9 @@
 # Released under GPLv3, a full copy of which can be found in COPYING.
 #
 
-"""
-This script acts as an HFP HF (ie. it emulates a car head unit).
-Your phone (HFAG) will connect to the RFCOMM socket server this script runs.
-You can use this script to experiment with sending AT commands to your HFAG.
-
-Be aware that most HFAG devices expect you to send a series of AT commands
-before they allow you to use the modem to do useful things. The sequence
-of AT commands below should work to initialize most HFAGs properly:
-
-AT+BRSF=39
-AT+CIND=?
-AT+CIND?
-AT+CMER=3,0,0,1
-AT+CHLD=?
-AT+CCWA=1
-AT+CLIP=1
-AT+NREC=0
-"""
+# This script acts as an HFP HF (ie. it emulates a car head unit).
+# Your phone (HFAG) will connect to the RFCOMM socket server this script runs.
+# You can use this script to experiment with sending AT commands to your HFAG.
 
 from nOBEX import bluez_helper
 from threading import Thread
