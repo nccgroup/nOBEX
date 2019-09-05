@@ -154,7 +154,26 @@ def _find_attr(xml_tree, attr_id):
             return elem
     raise SDPException("Attribute %s not found!" % attr_id)
 
+_bluez_version_verified = False
+
+def _verify_bluez_version():
+    val = subrun(["bluetoothctl", "-v"], stdout=subprocess.PIPE)
+    if val.returncode != 0:
+        raise SDPException("Failed to get bluez version! Error: %i" % val.returncode)
+    verstr = val.stdout[14:-1]
+    smajor, sminor = verstr.split(b'.')
+    major = int(smajor)
+    minor = int(sminor)
+    if (major < 5) or (major == 5 and minor < 49):
+        raise SDPException("bluez 5.49 or newer required! you have bluez %i.%i" % (major, minor))
+
+    global _bluez_version_verified
+    _bluez_version_verified = True
+
 def list_paired_devices():
+    if not _bluez_version_verified:
+        _verify_bluez_version()
+
     devs = set()
 
     val = subrun(["bluetoothctl", "paired-devices"], stdout=subprocess.PIPE)
