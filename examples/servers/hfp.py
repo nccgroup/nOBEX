@@ -71,7 +71,7 @@ class HFPMessageHandler(object):
                 msg.extend(sock.recv(1))
             except ConnectionResetError:
                 print("connection reset")
-                break
+                return None
         return bytes(msg)
 
 class HFPServer(server.Server):
@@ -156,6 +156,9 @@ class HFPServer(server.Server):
                 self.connected = True
                 while self.connected:
                     request = self.request_handler.decode(connection)
+                    if request is None:
+                        self.connected = False
+                        break
                     self.commander.sock_notify(request)
                     with self.write_lock:
                         self.process_request(connection, request)
